@@ -11,6 +11,22 @@ export default function PostCard({ post }) {
         />
         <Text style={styles.nomeUsuario}>{post.nomeUsuario}</Text>
       </View>
+
+      <Image
+        source={{ uri: post.imagemUrl }}
+        style={styles.imagemPost}
+        resizeMode="cover"
+      />
+
+      <View style={styles.rodape}>
+        <Text style={styles.curtidas}>
+          {post.quantidadeCurtidas} curtidas
+        </Text>
+        <Text style={styles.legenda}>
+          <Text style={styles.nomeUsuarioLegenda}>{post.nomeUsuario} </Text>
+          {post.legenda}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -38,5 +54,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     color: '#262626',
+  },
+  imagemPost: {
+    width: '100%',
+    height: 320,
+    backgroundColor: '#F0F0F0',
+  },
+  rodape: {
+    padding: 12,
+  },
+  curtidas: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#262626',
+  },
+  legenda: {
+    fontSize: 14,
+    color: '#262626',
+    lineHeight: 20,
+  },
+  nomeUsuarioLegenda: {
+    fontWeight: 'bold',
   },
 });
