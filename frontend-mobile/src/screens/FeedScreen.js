@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, FlatList, StyleSheet } from 'react-native';
+import PostCard from '../components/PostCard';
 
 export default function FeedScreen() {
   const [posts] = useState([
@@ -15,9 +16,11 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.statusTexto}>
-        Total de publicações carregadas: {posts.length}
-      </Text>
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => <PostCard post={item} />}
+      />
     </View>
   );
 }
@@ -26,11 +29,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusTexto: {
-    fontSize: 14,
-    color: '#262626',
   },
 });
