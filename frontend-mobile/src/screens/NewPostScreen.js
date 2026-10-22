@@ -6,7 +6,7 @@ export default function NewPostScreen() {
     <View style={styles.container}>
       <Text style={styles.titulo}>Nova Publicação</Text>
       <Text style={styles.subtitulo}>
-        O formulário de envio de imagens será implementado na Semana 4.
+        em breve o formulário para postar imagens
       </Text>
     </View>
   );

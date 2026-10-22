@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:8080/api';
+export const API_BASE_URL = 'https://improved-doodle-xrwp6jw9gv952p7xp.github.dev/api';
 
 export async function buscarPostsApi() {
   try {

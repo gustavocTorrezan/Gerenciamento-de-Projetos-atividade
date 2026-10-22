@@ -6,7 +6,7 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       <Text style={styles.titulo}>Perfil do Usuário</Text>
       <Text style={styles.subtitulo}>
-        Os dados completos do perfil e grade de fotos serão implementados na Semana 7.
+        Dados do perfil aqui.
       </Text>
     </View>
   );
