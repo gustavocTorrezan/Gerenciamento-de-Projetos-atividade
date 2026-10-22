@@ -7,7 +7,7 @@ export default function FeedScreen() {
     {
       id: 1,
       nomeUsuario: 'estudante.cc',
-      fotoPerfilUsuarioUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      fotoPerfilUsuarioUrl: 'https://i.ibb.co/b5jnXG2X/Whats-App-Image-2026-10-22-at-15-53-04-1.jpg',
       imagemUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600',
       legenda: 'Layout base do Feed pronto na Semana 2!',
       quantidadeCurtidas: 10,
