@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -15,6 +16,7 @@ public class BancoDeDadosMemoria {
     private List<Usuario> usuarios;
     private List<Post> posts;
     private long proximoPostId = 3L;
+    private long proximoComentarioId = 3L;
 
     public BancoDeDadosMemoria() {
         this.usuarios = new ArrayList<>();
@@ -41,6 +43,10 @@ public class BancoDeDadosMemoria {
 
     public List<Usuario> getUsuarios() { return usuarios; }
 
+    public Optional<Usuario> buscarUsuarioPorId(Long id) {
+        return usuarios.stream().filter(u -> u.getId().equals(id)).findFirst();
+    }
+
     public List<Post> getPosts() {
         return posts.stream().sorted(Comparator.comparingLong(Post::getTimestampCriacao).reversed()).collect(Collectors.toList());
     }
@@ -49,5 +55,27 @@ public class BancoDeDadosMemoria {
         Post novo = new Post(proximoPostId++, nomeUsuario, fotoPerfilUrl, imagemUrl, legenda, 0, false, System.currentTimeMillis());
         posts.add(novo);
         return novo;
+    }
+
+    public Optional<Post> alternarCurtida(Long postId) {
+        Optional<Post> postOpt = posts.stream().filter(p -> p.getId().equals(postId)).findFirst();
+        postOpt.ifPresent(post -> {
+            if (post.isCurtidoPeloUsuarioAtual()) {
+                post.setCurtidoPeloUsuarioAtual(false);
+                post.setQuantidadeCurtidas(Math.max(0, post.getQuantidadeCurtidas() - 1));
+            } else {
+                post.setCurtidoPeloUsuarioAtual(true);
+                post.setQuantidadeCurtidas(post.getQuantidadeCurtidas() + 1);
+            }
+        });
+        return postOpt;
+    }
+
+    public Optional<Post> adicionarComentario(Long postId, String nomeUsuario, String texto) {
+        Optional<Post> postOpt = posts.stream().filter(p -> p.getId().equals(postId)).findFirst();
+        postOpt.ifPresent(post -> {
+            post.adicionarComentario(new Comentario(proximoComentarioId++, nomeUsuario, texto, System.currentTimeMillis()));
+        });
+        return postOpt;
     }
 }
