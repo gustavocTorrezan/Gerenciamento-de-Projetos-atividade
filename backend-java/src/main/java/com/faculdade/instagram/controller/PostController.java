@@ -37,4 +37,13 @@ public class PostController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/{id}/comentarios")
+    public ResponseEntity<Post> comentarPost(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String nomeUsuario = payload.getOrDefault("nomeUsuario", "estudante.cc");
+        String texto = payload.getOrDefault("texto", "");
+        return bancoDeDados.adicionarComentario(id, nomeUsuario, texto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
