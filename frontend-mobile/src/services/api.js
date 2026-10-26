@@ -55,3 +55,27 @@ export async function criarPostApi(novoPost) {
     };
   }
 }
+
+export async function curtirPostApi(postId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/curtir`, { method: 'POST' });
+    if (!response.ok) throw new Error('Erro ao curtir');
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function comentarPostApi(postId, texto) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nomeUsuario: 'estudante.cc', texto }),
+    });
+    if (!response.ok) throw new Error('Erro ao comentar');
+    return await response.json();
+  } catch (error) {
+    return null;
+  }
+}
