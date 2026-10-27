@@ -1,7 +1,15 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 
-export default function PostCard({ post, onCurtir }) {
+export default function PostCard({ post, onCurtir, onComentar }) {
+  const [novoComentario, setNovoComentario] = useState('');
+
+  function enviarComentario() {
+    if (!novoComentario.trim()) return;
+    onComentar(novoComentario);
+    setNovoComentario('');
+  }
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -22,6 +30,25 @@ export default function PostCard({ post, onCurtir }) {
           <Text style={styles.username}>{post.nomeUsuario} </Text>
           {post.legenda}
         </Text>
+
+        {post.comentarios && post.comentarios.map((c) => (
+          <Text key={String(c.id)} style={styles.commentText}>
+            <Text style={styles.username}>{c.nomeUsuario} </Text>
+            {c.texto}
+          </Text>
+        ))}
+
+        <View style={styles.commentInputRow}>
+          <TextInput
+            style={styles.commentInput}
+            placeholder="Adicione um comentario..."
+            value={novoComentario}
+            onChangeText={setNovoComentario}
+          />
+          <TouchableOpacity onPress={enviarComentario}>
+            <Text style={styles.sendText}>Publicar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -39,5 +66,9 @@ const styles = StyleSheet.create({
   likeIcon: { fontSize: 15, fontWeight: '600', color: '#262626' },
   liked: { color: '#ED4956' },
   likes: { fontWeight: 'bold', marginBottom: 5, fontSize: 14 },
-  caption: { fontSize: 14, color: '#262626' },
+  caption: { fontSize: 14, color: '#262626', marginBottom: 6 },
+  commentText: { fontSize: 13, color: '#262626', marginTop: 3 },
+  commentInputRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, borderTopWidth: 1, borderTopColor: '#EFEFEF', paddingTop: 8 },
+  commentInput: { flex: 1, fontSize: 13, paddingVertical: 4 },
+  sendText: { color: '#0095F6', fontWeight: 'bold', fontSize: 13, marginLeft: 10 },
 });
