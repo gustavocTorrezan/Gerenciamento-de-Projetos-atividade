@@ -23,9 +23,9 @@ public class MensagemController {
 
     @PostMapping
     public Mensagem enviarMensagem(@RequestBody Map<String, String> payload) {
-        String remetente = payload.get("remetente");
-        String destinatario = payload.get("destinatario");
-        String texto = payload.get("texto");
+        String remetente = payload.getOrDefault("remetente", "estudante.cc");
+        String destinatario = payload.getOrDefault("destinatario", "ada.lovelace");
+        String texto = payload.getOrDefault("texto", "");
         return bancoDeDados.enviarMensagem(remetente, destinatario, texto);
     }
 }
