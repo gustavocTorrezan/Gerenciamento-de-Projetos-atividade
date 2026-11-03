@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,9 +21,13 @@ public class AuthController {
     public ResponseEntity<Usuario> login(@RequestBody Map<String, String> credenciais) {
         String usuario = credenciais.get("usuario");
         String senha = credenciais.get("senha");
-
         return bancoDeDados.autenticar(usuario, senha)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
+    }
+
+    @GetMapping("/usuarios")
+    public List<Usuario> listarUsuarios() {
+        return bancoDeDados.getUsuarios();
     }
 }
