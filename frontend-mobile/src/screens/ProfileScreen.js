@@ -18,6 +18,7 @@ export default function ProfileScreen({ usuario, posts = [] }) {
         keyExtractor={(item) => String(item.id)}
         numColumns={3}
         renderItem={({ item }) => <Image source={{ uri: item.imagemUrl }} style={styles.miniatura} />}
+        ListEmptyComponent={<Text style={styles.vazio}>Nenhuma publicacao ainda.</Text>}
       />
     </View>
   );
@@ -33,4 +34,5 @@ const styles = StyleSheet.create({
   bio: { fontSize: 13, color: '#666666', marginTop: 4 },
   contador: { fontSize: 13, fontWeight: 'bold', color: '#262626', marginTop: 8 },
   miniatura: { flex: 1 / 3, aspectRatio: 1, margin: 1, backgroundColor: '#EFEFEF' },
+  vazio: { textAlign: 'center', color: '#8E8E8E', marginTop: 30, fontSize: 14 },
 });
