@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://organic-palm-tree-qvq4rwq95qxjh444r.github.dev/api';
+export const API_BASE_URL = 'https://organic-palm-tree-qvq4rwq95qxjh444r-8080.app.github.dev/api';
 
 export async function loginApi(usuario, senha) {
   try {
