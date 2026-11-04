@@ -1,18 +1,15 @@
 import React from 'react';
 import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
 
-export default function ProfileScreen({ posts = [] }) {
+export default function ProfileScreen({ usuario, posts = [] }) {
   return (
     <View style={styles.container}>
       <View style={styles.headerPerfil}>
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' }}
-          style={styles.avatarGrande}
-        />
+        <Image source={{ uri: usuario?.fotoPerfilUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' }} style={styles.avatarGrande} />
         <View style={styles.infoUsuario}>
-          <Text style={styles.nomeUsuario}>estudante.cc</Text>
-          <Text style={styles.nomeCompleto}>Estudante de Computacao</Text>
-          <Text style={styles.bio}>1o Ano de Ciencia da Computacao | Java & React Native</Text>
+          <Text style={styles.nomeUsuario}>{usuario?.nomeUsuario || 'usuario'}</Text>
+          <Text style={styles.nomeCompleto}>{usuario?.nomeCompleto || 'Nome'}</Text>
+          <Text style={styles.bio}>{usuario?.bio || 'Sem biografia'}</Text>
           <Text style={styles.contador}>{posts.length} publicacoes</Text>
         </View>
       </View>
@@ -20,9 +17,7 @@ export default function ProfileScreen({ posts = [] }) {
         data={posts}
         keyExtractor={(item) => String(item.id)}
         numColumns={3}
-        renderItem={({ item }) => (
-          <Image source={{ uri: item.imagemUrl }} style={styles.miniatura} />
-        )}
+        renderItem={({ item }) => <Image source={{ uri: item.imagemUrl }} style={styles.miniatura} />}
       />
     </View>
   );
