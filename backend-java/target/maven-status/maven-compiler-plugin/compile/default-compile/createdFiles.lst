@@ -1,8 +1,0 @@
-com/faculdade/instagram/controller/AuthController.class
-com/faculdade/instagram/model/Post.class
-com/faculdade/instagram/InstagramApplication.class
-com/faculdade/instagram/model/Mensagem.class
-com/faculdade/instagram/model/Comentario.class
-com/faculdade/instagram/controller/MensagemController.class
-com/faculdade/instagram/database/BancoDeDadosMemoria.class
-com/faculdade/instagram/model/Usuario.class
