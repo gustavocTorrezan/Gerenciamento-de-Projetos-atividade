@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://organic-palm-tree-qvq4rwq95qxjh444r-8080.app.github.dev/api';
+export const API_BASE_URL = 'http://localhost:8080/api';
 
 export async function loginApi(usuario, senha) {
   try {
@@ -17,10 +17,24 @@ export async function loginApi(usuario, senha) {
   }
 }
 
+export async function registrarApi(usuario, senha) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/registrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usuario, senha }),
+    });
+    if (!response.ok) throw new Error('Erro ao registrar');
+    return await response.json();
+  } catch (error) {
+    return { nomeUsuario: usuario, nomeCompleto: usuario, fotoPerfilUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150', bio: 'Novo usuario InstaCC' };
+  }
+}
+
 export async function listarUsuariosApi() {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/usuarios`);
-    if (!response.ok) throw new Error('Erro ao listar usuarios');
+    if (!response.ok) throw new Error('Erro ao listar');
     return await response.json();
   } catch (error) {
     return [
@@ -30,10 +44,34 @@ export async function listarUsuariosApi() {
   }
 }
 
-export async function buscarMensagensApi(user1, user2) {
+export async function buscarPostsApi() {
   try {
-    const response = await fetch(`${API_BASE_URL}/mensagens?user1=${user1}&user2=${user2}`);
-    if (!response.ok) throw new Error('Erro ao buscar mensagens');
+    const response = await fetch(`${API_BASE_URL}/posts`);
+    if (!response.ok) throw new Error('Erro');
+    return await response.json();
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function criarPostApi(novoPost) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(novoPost),
+    });
+    if (!response.ok) throw new Error('Erro');
+    return await response.json();
+  } catch (error) {
+    return { id: Date.now(), ...novoPost, quantidadeCurtidas: 0, curtidoPeloUsuarioAtual: false, comentarios: [] };
+  }
+}
+
+export async function buscarMensagensApi(u1, u2) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/mensagens?user1=${u1}&user2=${u2}`);
+    if (!response.ok) throw new Error('Erro');
     return await response.json();
   } catch (error) {
     return [];
@@ -47,7 +85,7 @@ export async function enviarMensagemApi(remetente, destinatario, texto) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ remetente, destinatario, texto }),
     });
-    if (!response.ok) throw new Error('Erro ao enviar');
+    if (!response.ok) throw new Error('Erro');
     return await response.json();
   } catch (error) {
     return { id: Date.now(), remetente, destinatario, texto, timestamp: Date.now() };
