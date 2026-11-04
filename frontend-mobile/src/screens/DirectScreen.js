@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { buscarMensagensApi, enviarMensagemApi } from '../services/api';
+import { listarUsuariosApi, buscarMensagensApi, enviarMensagemApi } from '../services/api';
 
 export default function DirectScreen({ usuarioAtual }) {
-  const destinatario = usuarioAtual === 'estudante.cc' ? 'ada.lovelace' : 'estudante.cc';
+  const [usuarios, setUsuarios] = useState([]);
+  const [destinatario, setDestinatario] = useState('ada.lovelace');
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
 
   useEffect(() => {
+    listarUsuariosApi().then(lista => {
+      const outros = lista.filter(u => u.nomeUsuario !== usuarioAtual);
+      setUsuarios(outros);
+      if (outros.length > 0) setDestinatario(outros[0].nomeUsuario);
+    });
+  }, [usuarioAtual]);
+
+  useEffect(() => {
+    if (!destinatario) return;
     async function carregar() {
       const msgs = await buscarMensagensApi(usuarioAtual, destinatario);
       setMensagens(msgs);
@@ -26,7 +36,9 @@ export default function DirectScreen({ usuarioAtual }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerChat}><Text style={styles.tituloChat}>Chat com {destinatario}</Text></View>
+      <View style={styles.headerChat}>
+        <Text style={styles.tituloChat}>Conversando com: {destinatario}</Text>
+      </View>
       <FlatList
         data={mensagens}
         keyExtractor={(item) => String(item.id || Math.random())}
@@ -41,7 +53,7 @@ export default function DirectScreen({ usuarioAtual }) {
         contentContainerStyle={{ padding: 15 }}
       />
       <View style={styles.inputRow}>
-        <TextInput style={styles.input} placeholder="Enviar mensagem..." value={texto} onChangeText={setTexto} />
+        <TextInput style={styles.input} placeholder="Mensagem..." value={texto} onChangeText={setTexto} />
         <TouchableOpacity onPress={enviar} style={styles.botaoEnviar}><Text style={styles.textoEnviar}>Enviar</Text></TouchableOpacity>
       </View>
     </View>
@@ -50,8 +62,8 @@ export default function DirectScreen({ usuarioAtual }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAFAFA' },
-  headerChat: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#DBDBDB', backgroundColor: '#FFF' },
-  tituloChat: { fontWeight: 'bold', fontSize: 16, textAlign: 'center', color: '#262626' },
+  headerChat: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#DBDBDB', backgroundColor: '#FFF' },
+  tituloChat: { fontWeight: 'bold', fontSize: 15, textAlign: 'center', color: '#262626' },
   balao: { padding: 10, borderRadius: 8, marginVertical: 4, maxWidth: '75%' },
   meuBalao: { backgroundColor: '#E0F1FF', alignSelf: 'flex-end' },
   outroBalao: { backgroundColor: '#EFEFEF', alignSelf: 'flex-start' },
