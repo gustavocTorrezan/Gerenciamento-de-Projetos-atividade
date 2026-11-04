@@ -19,7 +19,7 @@ export default function LoginScreen({ onLoginSucesso }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Instagram Clone</Text>
+      <Text style={styles.logo}>InstaCC</Text>
       {erro ? <Text style={styles.erro}>{erro}</Text> : null}
       <TextInput
         style={styles.input}
