@@ -26,6 +26,17 @@ public class AuthController {
                 .orElse(ResponseEntity.status(401).build());
     }
 
+    @PostMapping("/registrar")
+    public ResponseEntity<Usuario> registrar(@RequestBody Map<String, String> dados) {
+        String usuario = dados.get("usuario");
+        String senha = dados.get("senha");
+        if (usuario == null || senha == null || usuario.trim().isEmpty() || senha.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        Usuario novo = bancoDeDados.registrarUsuario(usuario, senha);
+        return ResponseEntity.ok(novo);
+    }
+
     @GetMapping("/usuarios")
     public List<Usuario> listarUsuarios() {
         return bancoDeDados.getUsuarios();
