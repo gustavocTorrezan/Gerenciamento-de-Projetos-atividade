@@ -6,7 +6,7 @@ import CreatePostScreen from './src/screens/CreatePostScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import DirectScreen from './src/screens/DirectScreen';
-import { buscarPostsApi, criarPostApi, curtirPostApi, comentarPostApi } from './src/services/api';
+import { buscarPostsApi, criarPostApi } from './src/services/api';
 
 export default function App() {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
@@ -27,7 +27,12 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <View style={styles.topBarContainer}>
+        <Header />
+        <TouchableOpacity style={styles.botaoSair} onPress={() => setUsuarioLogado(null)}>
+          <Text style={styles.textoBotaoSair}>Sair</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.conteudo}>
         {abaAtiva === 'feed' && <FeedScreen posts={posts} onCurtir={()=>{}} onComentar={()=>{}} />}
         {abaAtiva === 'direct' && <DirectScreen usuarioAtual={usuarioLogado.nomeUsuario} />}
@@ -50,6 +55,9 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
+  topBarContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#DBDBDB', backgroundColor: '#FFF' },
+  botaoSair: { paddingHorizontal: 15, paddingVertical: 8, backgroundColor: '#ED4956', borderRadius: 4, marginRight: 15 },
+  textoBotaoSair: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
   conteudo: { flex: 1 },
   tabBar: { height: 55, borderTopWidth: 1, borderTopColor: '#DBDBDB', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: '#FFFFFF' },
   tabItem: { padding: 10 },
