@@ -17,15 +17,26 @@ export async function loginApi(usuario, senha) {
   }
 }
 
+export async function listarUsuariosApi() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/usuarios`);
+    if (!response.ok) throw new Error('Erro ao listar usuarios');
+    return await response.json();
+  } catch (error) {
+    return [
+      { nomeUsuario: 'estudante.cc', fotoPerfilUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' },
+      { nomeUsuario: 'ada.lovelace', fotoPerfilUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150' }
+    ];
+  }
+}
+
 export async function buscarMensagensApi(user1, user2) {
   try {
     const response = await fetch(`${API_BASE_URL}/mensagens?user1=${user1}&user2=${user2}`);
     if (!response.ok) throw new Error('Erro ao buscar mensagens');
     return await response.json();
   } catch (error) {
-    return [
-      { id: 1, remetente: user2, destinatario: user1, texto: 'Ola! Tudo bem?', timestamp: Date.now() - 100000 }
-    ];
+    return [];
   }
 }
 
