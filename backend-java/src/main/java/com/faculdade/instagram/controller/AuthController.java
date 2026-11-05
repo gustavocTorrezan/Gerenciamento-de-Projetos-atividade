@@ -21,19 +21,28 @@ public class AuthController {
     public ResponseEntity<Usuario> login(@RequestBody Map<String, String> credenciais) {
         String usuario = credenciais.get("usuario");
         String senha = credenciais.get("senha");
-        return bancoDeDados.autenticar(usuario, senha)
+        if (usuario == null || senha == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return bancoDeDados.autenticar(usuario.trim(), senha)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
     }
 
     @PostMapping("/registrar")
-    public ResponseEntity<Usuario> registrar(@RequestBody Map<String, String> dados) {
+    public ResponseEntity<?> registrar(@RequestBody Map<String, String> dados) {
         String usuario = dados.get("usuario");
         String senha = dados.get("senha");
         if (usuario == null || senha == null || usuario.trim().isEmpty() || senha.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("erro", "Usuario e senha sao obrigatorios"));
         }
-        Usuario novo = bancoDeDados.registrarUsuario(usuario, senha);
+        String nomeLimpo = usuario.trim();
+        boolean jaExiste = bancoDeDados.getUsuarios().stream()
+                .anyMatch(u -> u.getNomeUsuario().equalsIgnoreCase(nomeLimpo));
+        if (jaExiste) {
+            return ResponseEntity.status(409).body(Map.of("erro", "Nome de usuario ja cadastrado"));
+        }
+        Usuario novo = bancoDeDados.registrarUsuario(nomeLimpo, senha);
         return ResponseEntity.ok(novo);
     }
 
