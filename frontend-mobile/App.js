@@ -15,7 +15,9 @@ export default function App() {
 
   useEffect(() => {
     if (usuarioLogado) {
-      buscarPostsApi().then(setPosts);
+      buscarPostsApi().then((dados) => {
+        setPosts(dados || []);
+      });
     }
   }, [usuarioLogado]);
 
@@ -37,10 +39,10 @@ export default function App() {
         {abaAtiva === 'perfil' && <ProfileScreen usuario={usuarioLogado} posts={posts.filter(p => p.nomeUsuario === usuarioLogado.nomeUsuario)} />}
       </View>
       <View style={styles.tabBar}>
-        <TouchableOpacity onPress={() => setAbaAtiva('feed')}><Text style={abaAtiva === 'feed' && styles.ativo}>Feed</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('direct')}><Text style={abaAtiva === 'direct' && styles.ativo}>Direct</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('criar')}><Text style={abaAtiva === 'criar' && styles.ativo}>+ Postar</Text></TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('perfil')}><Text style={abaAtiva === 'perfil' && styles.ativo}>Perfil</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setAbaAtiva('feed')} style={styles.tabItem}><Text style={[styles.tabTexto, abaAtiva === 'feed' && styles.ativo]}>Feed</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setAbaAtiva('direct')} style={styles.tabItem}><Text style={[styles.tabTexto, abaAtiva === 'direct' && styles.ativo]}>Direct</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setAbaAtiva('criar')} style={styles.tabItem}><Text style={[styles.tabTexto, abaAtiva === 'criar' && styles.ativo]}>+ Postar</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setAbaAtiva('perfil')} style={styles.tabItem}><Text style={[styles.tabTexto, abaAtiva === 'perfil' && styles.ativo]}>Perfil</Text></TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -50,5 +52,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   conteudo: { flex: 1 },
   tabBar: { height: 55, borderTopWidth: 1, borderTopColor: '#DBDBDB', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: '#FFFFFF' },
+  tabItem: { padding: 10 },
+  tabTexto: { fontSize: 14, color: '#8E8E8E' },
   ativo: { fontWeight: 'bold', color: '#0095F6' },
 });
