@@ -1,3 +1,4 @@
+// Tratamento de requisicoes de posts, curtidas e comentarios
 package com.faculdade.instagram.controller;
 
 import com.faculdade.instagram.database.BancoDeDadosMemoria;
