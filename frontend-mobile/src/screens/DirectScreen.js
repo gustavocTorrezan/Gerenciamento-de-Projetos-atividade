@@ -7,11 +7,13 @@ export default function DirectScreen({ usuarioAtual }) {
   const [destinatario, setDestinatario] = useState(null);
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
+  const [erroEnvio, setErroEnvio] = useState('');
 
-  // Carrega a lista de usuários do sistema tirando o usuário logado
   useEffect(() => {
+    setDestinatario(null);
+    setMensagens([]);
     listarUsuariosApi().then(lista => {
-      const outros = lista.filter(u => u.nomeUsuario !== usuarioAtual);
+      const outros = (lista || []).filter(u => u && u.nomeUsuario && u.nomeUsuario !== usuarioAtual);
       setUsuarios(outros);
       if (outros.length > 0) {
         setDestinatario(outros[0].nomeUsuario);
@@ -19,13 +21,15 @@ export default function DirectScreen({ usuarioAtual }) {
     });
   }, [usuarioAtual]);
 
-  // Atualiza as mensagens da conversa atual a cada 2 segundos
   useEffect(() => {
     if (!destinatario) return;
-    
+    setMensagens([]);
+
     async function carregarMensagens() {
       const msgs = await buscarMensagensApi(usuarioAtual, destinatario);
-      setMensagens(msgs || []);
+      if (Array.isArray(msgs)) {
+        setMensagens(msgs);
+      }
     }
 
     carregarMensagens();
@@ -35,9 +39,16 @@ export default function DirectScreen({ usuarioAtual }) {
 
   async function enviar() {
     if (!texto.trim() || !destinatario) return;
-    const novaMensagem = await enviarMensagemApi(usuarioAtual, destinatario, texto);
-    setMensagens(prev => [...prev, novaMensagem]);
-    setTexto('');
+    setErroEnvio('');
+    try {
+      const novaMensagem = await enviarMensagemApi(usuarioAtual, destinatario, texto.trim());
+      if (novaMensagem && novaMensagem.texto) {
+        setMensagens(prev => [...prev, novaMensagem]);
+        setTexto('');
+      }
+    } catch (e) {
+      setErroEnvio('Nao foi possivel enviar a mensagem.');
+    }
   }
 
   return (
@@ -63,11 +74,12 @@ export default function DirectScreen({ usuarioAtual }) {
         <>
           <View style={styles.headerChat}>
             <Text style={styles.tituloChat}>Chat ativo com: @{destinatario}</Text>
+            {!!erroEnvio && <Text style={styles.erroTexto}>{erroEnvio}</Text>}
           </View>
 
           <FlatList
             data={mensagens}
-            keyExtractor={(item, index) => String(item.id || index)}
+            keyExtractor={(item, index) => String(item?.id || index)}
             renderItem={({ item }) => {
               const souEu = item.remetente === usuarioAtual;
               return (
@@ -112,6 +124,7 @@ const styles = StyleSheet.create({
   textoUsuarioAtivo: { color: '#FFF' },
   headerChat: { padding: 10, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#DBDBDB', alignItems: 'center' },
   tituloChat: { fontWeight: 'bold', fontSize: 14, color: '#262626' },
+  erroTexto: { color: '#ED4956', fontSize: 12, marginTop: 4 },
   balaoMensagem: { padding: 10, borderRadius: 8, marginVertical: 4, maxWidth: '75%' },
   meuBalao: { backgroundColor: '#E0F1FF', alignSelf: 'flex-end' },
   outroBalao: { backgroundColor: '#EFEFEF', alignSelf: 'flex-start' },
