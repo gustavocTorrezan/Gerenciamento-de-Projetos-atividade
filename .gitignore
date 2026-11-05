@@ -1,0 +1,5 @@
+
+target/
+backend-java/target/
+frontend-mobile/.expo/
+node_modules/
