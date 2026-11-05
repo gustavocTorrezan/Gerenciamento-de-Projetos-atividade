@@ -1,3 +1,4 @@
+// Validacao de integridade dos registros em memoria
 package com.faculdade.instagram.database;
 
 import com.faculdade.instagram.model.Comentario;
