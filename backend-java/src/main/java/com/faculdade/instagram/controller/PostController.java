@@ -25,7 +25,7 @@ public class PostController {
 
     @PostMapping
     public Post criarPost(@RequestBody Map<String, String> payload) {
-        String nomeUsuario = payload.getOrDefault("nomeUsuario", "estudante.cc");
+        String nomeUsuario = payload.getOrDefault("nomeUsuario", payload.getOrDefault("autor", payload.getOrDefault("nomeUsuario", "usuario")));
         String fotoPerfilUrl = payload.getOrDefault("fotoPerfilUsuarioUrl", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
         String imagemUrl = payload.getOrDefault("imagemUrl", "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600");
         String legenda = payload.getOrDefault("legenda", "");
@@ -41,7 +41,7 @@ public class PostController {
 
     @PostMapping("/{id}/comentarios")
     public ResponseEntity<Post> comentarPost(@PathVariable Long id, @RequestBody Map<String, String> payload) {
-        String nomeUsuario = payload.getOrDefault("nomeUsuario", "estudante.cc");
+        String nomeUsuario = payload.getOrDefault("nomeUsuario", payload.getOrDefault("autor", payload.getOrDefault("nomeUsuario", "usuario")));
         String texto = payload.getOrDefault("texto", "");
         return bancoDeDados.adicionarComentario(id, nomeUsuario, texto)
                 .map(ResponseEntity::ok)

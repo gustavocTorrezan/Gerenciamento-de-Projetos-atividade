@@ -65,7 +65,7 @@ export async function comentarPostApi(postId, autor, texto) {
   const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ autor, texto }),
+    body: JSON.stringify({ autor, nomeUsuario: autor, usuario: autor, texto }),
   });
   if (!response.ok) throw new Error('Erro ao comentar no post');
   return await response.json();
