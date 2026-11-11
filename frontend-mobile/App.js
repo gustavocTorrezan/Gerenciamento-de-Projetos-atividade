@@ -50,69 +50,138 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topBarContainer}>
-        <Header />
-        <TouchableOpacity style={styles.botaoSair} onPress={realizarLogout}>
-          <Text style={styles.textoBotaoSair}>Sair</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.conteudo}>
-        {abaAtiva === 'feed' && (
-          <FeedScreen
-            posts={posts}
-            onCurtir={handleCurtir}
-            onComentar={handleComentar}
-          />
-        )}
-        {abaAtiva === 'direct' && <DirectScreen usuarioAtual={usuarioLogado.nomeUsuario} />}
-        {abaAtiva === 'criar' && (
-          <CreatePostScreen
-            onPublicar={async (img, leg) => {
-              if (!img || !img.trim()) return;
-              const novo = await criarPostApi({
-                nomeUsuario: usuarioLogado.nomeUsuario,
-                imagemUrl: img.trim(),
-                legenda: (leg || '').trim()
-              });
-              setPosts([novo, ...posts]);
-              setAbaAtiva('feed');
-            }}
-          />
-        )}
-        {abaAtiva === 'perfil' && (
-          <ProfileScreen
-            usuario={usuarioLogado}
-            posts={posts.filter(p => p.nomeUsuario === usuarioLogado.nomeUsuario)}
-          />
-        )}
-      </View>
-      <View style={styles.tabBar}>
-        <TouchableOpacity onPress={() => setAbaAtiva('feed')} style={styles.tabItem}>
-          <Text style={[styles.tabTexto, abaAtiva === 'feed' && styles.ativo]}>Feed</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('direct')} style={styles.tabItem}>
-          <Text style={[styles.tabTexto, abaAtiva === 'direct' && styles.ativo]}>Direct</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('criar')} style={styles.tabItem}>
-          <Text style={[styles.tabTexto, abaAtiva === 'criar' && styles.ativo]}>+ Postar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setAbaAtiva('perfil')} style={styles.tabItem}>
-          <Text style={[styles.tabTexto, abaAtiva === 'perfil' && styles.ativo]}>Perfil</Text>
-        </TouchableOpacity>
+    <SafeAreaView style={styles.outerBackground}>
+      <View style={styles.appWrapper}>
+        <View style={styles.topBarContainer}>
+          <Header />
+          <View style={styles.topRightActions}>
+            <Text style={styles.badgeUsuario}>@{usuarioLogado.nomeUsuario}</Text>
+            <TouchableOpacity style={styles.botaoSair} onPress={realizarLogout}>
+              <Text style={styles.textoBotaoSair}>Sair</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.conteudo}>
+          {abaAtiva === 'feed' && (
+            <FeedScreen
+              posts={posts}
+              usuarioAtual={usuarioLogado.nomeUsuario}
+              onCurtir={handleCurtir}
+              onComentar={handleComentar}
+            />
+          )}
+          {abaAtiva === 'direct' && <DirectScreen usuarioAtual={usuarioLogado.nomeUsuario} />}
+          {abaAtiva === 'criar' && (
+            <CreatePostScreen
+              onPublicar={async (img, leg) => {
+                if (!img || !img.trim()) return;
+                const novo = await criarPostApi({
+                  nomeUsuario: usuarioLogado.nomeUsuario,
+                  imagemUrl: img.trim(),
+                  legenda: (leg || '').trim()
+                });
+                setPosts([novo, ...posts]);
+                setAbaAtiva('feed');
+              }}
+            />
+          )}
+          {abaAtiva === 'perfil' && (
+            <ProfileScreen
+              usuario={usuarioLogado}
+              posts={posts.filter(p => p.nomeUsuario === usuarioLogado.nomeUsuario)}
+            />
+          )}
+        </View>
+
+        <View style={styles.tabBar}>
+          <TouchableOpacity onPress={() => setAbaAtiva('feed')} style={styles.tabItem}>
+            <Text style={[styles.tabTexto, abaAtiva === 'feed' && styles.ativo]}>🏠 Feed</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setAbaAtiva('direct')} style={styles.tabItem}>
+            <Text style={[styles.tabTexto, abaAtiva === 'direct' && styles.ativo]}>💬 Direct</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setAbaAtiva('criar')} style={styles.tabItem}>
+            <Text style={[styles.tabTexto, abaAtiva === 'criar' && styles.ativo]}>➕ Postar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setAbaAtiva('perfil')} style={styles.tabItem}>
+            <Text style={[styles.tabTexto, abaAtiva === 'perfil' && styles.ativo]}>👤 Perfil</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  topBarContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#DBDBDB', backgroundColor: '#FFF' },
-  botaoSair: { paddingHorizontal: 15, paddingVertical: 8, backgroundColor: '#ED4956', borderRadius: 4, marginRight: 15 },
-  textoBotaoSair: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
-  conteudo: { flex: 1 },
-  tabBar: { height: 55, borderTopWidth: 1, borderTopColor: '#DBDBDB', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', backgroundColor: '#FFFFFF' },
-  tabItem: { padding: 10 },
-  tabTexto: { fontSize: 14, color: '#8E8E8E' },
-  ativo: { fontWeight: 'bold', color: '#0095F6' },
+  outerBackground: {
+    flex: 1,
+    backgroundColor: '#ECEEF2',
+  },
+  appWrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 680,
+    alignSelf: 'center',
+    backgroundColor: '#FFFFFF',
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: '#DBDBDB',
+  },
+  topBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EAEAEA',
+    backgroundColor: '#FFF',
+    paddingRight: 14,
+  },
+  topRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badgeUsuario: {
+    fontSize: 13,
+    color: '#555',
+    fontWeight: '600',
+    marginRight: 10,
+  },
+  botaoSair: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    backgroundColor: '#ED4956',
+    borderRadius: 6,
+  },
+  textoBotaoSair: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  conteudo: {
+    flex: 1,
+    backgroundColor: '#F6F7F9',
+  },
+  tabBar: {
+    height: 58,
+    borderTopWidth: 1,
+    borderTopColor: '#EAEAEA',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  tabItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  tabTexto: {
+    fontSize: 14,
+    color: '#8E8E8E',
+    fontWeight: '500',
+  },
+  ativo: {
+    fontWeight: 'bold',
+    color: '#0095F6',
+  },
 });
