@@ -30,3 +30,11 @@ Este repositorio abriga o desenvolvimento de um clone funcional do Instagram con
 - IgorPenasso - Desenvolvedor Back-end
 - FredRodriguess - Desenvolvedor Front-end
 - gustavocTorrezan - Desenvolvedor Front-end
+
+
+## Sprint Atual - Stories, Scroll Infinito e Responsividade Web
+- **Product Owner (PO):** Gustavo Torrezan (`gustavocTorrezan`)
+- **Entregas da Semana:**
+  - Implementação do sistema de Stories com visualização temporizada e publicação em tempo real.
+  - Paginação e Scroll Infinito no Feed de publicações.
+  - Padronização visual e dimensionamento responsivo de imagens para a versão Web Desktop.
