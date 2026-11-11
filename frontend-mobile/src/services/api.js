@@ -1,5 +1,29 @@
 export const API_BASE_URL = 'https://organic-palm-tree-qvq4rwq95qxjh444r-8080.app.github.dev/api';
 
+const STORIES_FALLBACK = [
+  {
+    id: 1,
+    nomeUsuario: 'estudante.cc',
+    avatarUrl: 'https://ui-avatars.com/api/?background=E1306C&color=fff&name=EC',
+    imagemUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
+    legenda: 'Codando a nova sprint do InstaCC! 🚀'
+  },
+  {
+    id: 2,
+    nomeUsuario: 'ada.lovelace',
+    avatarUrl: 'https://ui-avatars.com/api/?background=833AB4&color=fff&name=AL',
+    imagemUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
+    legenda: 'Revisando algoritmos e estruturas de dados ☕'
+  },
+  {
+    id: 3,
+    nomeUsuario: 'alan.turing',
+    avatarUrl: 'https://ui-avatars.com/api/?background=F77737&color=fff&name=AT',
+    imagemUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80',
+    legenda: 'Testando criptografia no back-end Java 🔐'
+  }
+];
+
 export async function loginApi(usuario, senha) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -40,6 +64,47 @@ export async function buscarPostsApi() {
     return await response.json();
   } catch (e) {
     return [];
+  }
+}
+
+export async function buscarPostsPaginadosApi(pagina = 1, limite = 3) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/posts/paginado?pagina=${pagina}&limite=${limite}`);
+    if (!response.ok) return await buscarPostsApi();
+    return await response.json();
+  } catch (e) {
+    return [];
+  }
+}
+
+export async function buscarStoriesApi() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stories`);
+    if (!response.ok) return STORIES_FALLBACK;
+    const dados = await response.json();
+    return Array.isArray(dados) && dados.length > 0 ? dados : STORIES_FALLBACK;
+  } catch (e) {
+    return STORIES_FALLBACK;
+  }
+}
+
+export async function criarStoryApi(nomeUsuario, imagemUrl, legenda = '') {
+  try {
+    const response = await fetch(`${API_BASE_URL}/stories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nomeUsuario, imagemUrl, legenda }),
+    });
+    if (!response.ok) throw new Error('Fallback local');
+    return await response.json();
+  } catch (e) {
+    return {
+      id: Date.now(),
+      nomeUsuario,
+      avatarUrl: `https://ui-avatars.com/api/?background=E1306C&color=fff&name=${encodeURIComponent(nomeUsuario)}`,
+      imagemUrl,
+      legenda
+    };
   }
 }
 
