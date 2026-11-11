@@ -47,4 +47,19 @@ public class PostController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/paginado")
+    public List<Post> listarPostsPaginados(
+            @RequestParam(defaultValue = "1") int pagina,
+            @RequestParam(defaultValue = "3") int limite) {
+        List<Post> todos = bancoDeDados.getPosts();
+        if (todos.isEmpty()) return todos;
+        int inicio = (pagina - 1) * limite;
+        List<Post> resultado = new java.util.ArrayList<>();
+        for (int i = 0; i < limite; i++) {
+            Post original = todos.get((inicio + i) % todos.size());
+            resultado.add(original);
+        }
+        return resultado;
+    }
 }
