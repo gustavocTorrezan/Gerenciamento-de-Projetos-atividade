@@ -1,69 +1,233 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { loginApi, registrarApi } from '../services/api';
 
 export default function LoginScreen({ onLoginSucesso }) {
+  const [modoCadastro, setModoCadastro] = useState(false);
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
-  const [isRegistrando, setIsRegistrando] = useState(false);
   const [erro, setErro] = useState('');
+  const [sucessoMsg, setSucessoMsg] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
-  async function handleSubmit() {
-    if (!usuario.trim() || !senha.trim()) {
-      setErro('Preencha todos os campos!');
+  async function submeter() {
+    setErro('');
+    setSucessoMsg('');
+
+    const userLimpo = usuario.trim();
+    const senhaLimpa = senha.trim();
+
+    if (!userLimpo || !senhaLimpa) {
+      setErro('Preencha o nome de usuário e a senha.');
       return;
     }
+
+    setCarregando(true);
     try {
-      setErro('');
-      let user;
-      if (isRegistrando) {
-        user = await registrarApi(usuario.trim(), senha.trim());
+      if (modoCadastro) {
+        const novoUsuario = await registrarApi(userLimpo, senhaLimpa);
+        onLoginSucesso(novoUsuario);
       } else {
-        user = await loginApi(usuario.trim(), senha.trim());
+        const dadosUsuario = await loginApi(userLimpo, senhaLimpa);
+        onLoginSucesso(dadosUsuario);
       }
-      onLoginSucesso(user);
     } catch (e) {
-      setErro(isRegistrando ? 'Erro ao registrar usuario.' : 'Usuario ou senha invalidos!');
+      setErro(
+        modoCadastro
+          ? (e.message || 'Erro ao criar conta. Tente outro nome de usuário.')
+          : 'Usuário ou senha incorretos. (Teste: estudante.cc / 123)'
+      );
+    } finally {
+      setCarregando(false);
     }
   }
 
+  function alternarModo() {
+    setErro('');
+    setSucessoMsg('');
+    setModoCadastro(!modoCadastro);
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>InstaCC</Text>
-      {erro ? <Text style={styles.erro}>{erro}</Text> : null}
-      <TextInput
-        style={styles.input}
-        placeholder="Nome de usuario"
-        value={usuario}
-        onChangeText={setUsuario}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        value={senha}
-        onChangeText={setSenha}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.botao} onPress={handleSubmit}>
-        <Text style={styles.textoBotao}>{isRegistrando ? 'Cadastrar' : 'Entrar'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setIsRegistrando(!isRegistrando)} style={styles.linkTroca}>
-        <Text style={styles.textoLink}>
-          {isRegistrando ? 'Ja tem uma conta? Fazer login' : 'Nao tem uma conta? Cadastre-se'}
+    <View style={styles.outer}>
+      <View style={styles.card}>
+        <Text style={styles.logo}>InstaCC</Text>
+        <Text style={styles.subtitulo}>
+          {modoCadastro
+            ? 'Cadastre-se para ver fotos e vídeos dos seus amigos.'
+            : 'Entre com sua conta acadêmica para continuar.'}
         </Text>
-      </TouchableOpacity>
+
+        {!!erro && (
+          <View style={styles.erroBox}>
+            <Text style={styles.erroTexto}>{erro}</Text>
+          </View>
+        )}
+
+        {!!sucessoMsg && (
+          <View style={styles.sucessoBox}>
+            <Text style={styles.sucessoTexto}>{sucessoMsg}</Text>
+          </View>
+        )}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Nome de usuário (ex: estudante.cc)"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          value={usuario}
+          onChangeText={setUsuario}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={senha}
+          onChangeText={setSenha}
+        />
+
+        <TouchableOpacity
+          style={styles.botaoPrincipal}
+          onPress={submeter}
+          disabled={carregando}
+        >
+          {carregando ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <Text style={styles.textoBotaoPrincipal}>
+              {modoCadastro ? 'Cadastrar e Entrar' : 'Entrar'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.divisorRow}>
+          <View style={styles.linha} />
+          <Text style={styles.ouTexto}>OU</Text>
+          <View style={styles.linha} />
+        </View>
+
+        <TouchableOpacity onPress={alternarModo} style={styles.botaoAlternar}>
+          <Text style={styles.textoAlternar}>
+            {modoCadastro
+              ? 'Já tem uma conta? Conecte-se'
+              : 'Não tem uma conta? Cadastre-se'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#FFFFFF' },
-  logo: { fontSize: 36, fontWeight: 'bold', marginBottom: 30, color: '#262626' },
-  input: { width: '100%', backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#DBDBDB', borderRadius: 6, padding: 12, marginBottom: 15, fontSize: 14 },
-  botao: { width: '100%', backgroundColor: '#0095F6', padding: 14, borderRadius: 6, alignItems: 'center', marginBottom: 15 },
-  textoBotao: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 15 },
-  erro: { color: '#ED4956', marginBottom: 15, fontWeight: '600' },
-  linkTroca: { marginTop: 10 },
-  textoLink: { color: '#0095F6', fontSize: 14, fontWeight: '600' },
+  outer: {
+    flex: 1,
+    backgroundColor: '#F6F7F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DBDBDB',
+    borderRadius: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 34,
+    alignItems: 'center',
+  },
+  logo: {
+    fontSize: 34,
+    fontWeight: 'bold',
+    color: '#262626',
+    marginBottom: 8,
+  },
+  subtitulo: {
+    fontSize: 13,
+    color: '#8E8E8E',
+    textAlign: 'center',
+    marginBottom: 22,
+    lineHeight: 18,
+  },
+  erroBox: {
+    width: '100%',
+    backgroundColor: '#FFF0F3',
+    borderWidth: 1,
+    borderColor: '#FFD6DF',
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 14,
+  },
+  erroTexto: {
+    color: '#ED4956',
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  sucessoBox: {
+    width: '100%',
+    backgroundColor: '#E8F8F0',
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 14,
+  },
+  sucessoTexto: {
+    color: '#1E8E3E',
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  input: {
+    width: '100%',
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#DBDBDB',
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    fontSize: 14,
+    color: '#262626',
+    marginBottom: 12,
+  },
+  botaoPrincipal: {
+    width: '100%',
+    backgroundColor: '#0095F6',
+    borderRadius: 6,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  textoBotaoPrincipal: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  divisorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 20,
+  },
+  linha: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#DBDBDB',
+  },
+  ouTexto: {
+    marginHorizontal: 12,
+    fontSize: 12,
+    color: '#8E8E8E',
+    fontWeight: 'bold',
+  },
+  botaoAlternar: {
+    paddingVertical: 6,
+  },
+  textoAlternar: {
+    color: '#0095F6',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
 });
