@@ -1,6 +1,9 @@
 // Validacao de integridade dos registros em memoria
 package com.faculdade.instagram.database;
 
+import com.faculdade.instagram.model.Story;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.faculdade.instagram.model.Comentario;
 import com.faculdade.instagram.model.Mensagem;
 import com.faculdade.instagram.model.Post;
@@ -112,5 +115,23 @@ public class BancoDeDadosMemoria {
         Mensagem m = new Mensagem(proximaMensagemId++, remetente, destinatario, texto, System.currentTimeMillis());
         mensagens.add(m);
         return m;
+    }
+
+    private final java.util.List<Story> stories = new CopyOnWriteArrayList<>(java.util.Arrays.asList(
+        new Story(1L, "estudante.cc", "https://ui-avatars.com/api/?background=E1306C&color=fff&name=EC", "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80", "Codando a nova sprint do InstaCC! 🚀"),
+        new Story(2L, "ada.lovelace", "https://ui-avatars.com/api/?background=833AB4&color=fff&name=AL", "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80", "Revisando algoritmos e estruturas de dados ☕"),
+        new Story(3L, "alan.turing", "https://ui-avatars.com/api/?background=F77737&color=fff&name=AT", "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=80", "Testando criptografia no back-end Java 🔐")
+    ));
+
+    public java.util.List<Story> listarStories() {
+        return stories;
+    }
+
+    public Story adicionarStory(String nomeUsuario, String imagemUrl, String legenda) {
+        long novoId = stories.size() + 1L;
+        String avatar = "https://ui-avatars.com/api/?background=E1306C&color=fff&name=" + nomeUsuario;
+        Story novo = new Story(novoId, nomeUsuario, avatar, imagemUrl, legenda);
+        stories.add(0, novo);
+        return novo;
     }
 }
