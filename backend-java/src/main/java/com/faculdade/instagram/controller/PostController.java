@@ -32,7 +32,7 @@ public class PostController {
         return bancoDeDados.adicionarPost(nomeUsuario, fotoPerfilUrl, imagemUrl, legenda);
     }
 
-    @PostMapping("/{id}/curtir")
+    @RequestMapping(value = "/{id}/curtir", method = {RequestMethod.POST, RequestMethod.PUT})
     public ResponseEntity<Post> curtirPost(@PathVariable Long id) {
         return bancoDeDados.alternarCurtida(id)
                 .map(ResponseEntity::ok)

@@ -1,4 +1,18 @@
-export const API_BASE_URL = 'https://organic-palm-tree-qvq4rwq95qxjh444r-8080.app.github.dev/api';
+function resolverBaseUrl() {
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const host = window.location.hostname;
+    if (host.includes('.app.github.dev')) {
+      const backendHost = host.replace(/-(8081|19006|19000|3000|5173)\.app\.github\.dev/, '-8080.app.github.dev');
+      return `https://${backendHost}/api`;
+    }
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:8080/api';
+    }
+  }
+  return 'https://organic-palm-tree-qvq4rwq95qxjh444r-8080.app.github.dev/api';
+}
+
+export const API_BASE_URL = resolverBaseUrl();
 
 const STORIES_FALLBACK = [
   {
@@ -119,21 +133,33 @@ export async function criarPostApi(novoPost) {
 }
 
 export async function curtirPostApi(postId) {
-  const response = await fetch(`${API_BASE_URL}/posts/${postId}/curtir`, {
-    method: 'POST',
-  });
-  if (!response.ok) throw new Error('Erro ao curtir post');
-  return await response.json();
+  try {
+    const idOriginal = String(postId).split('-page-')[0];
+    const response = await fetch(`${API_BASE_URL}/posts/${idOriginal}/curtir`, {
+      method: 'POST',
+    });
+    if (!response.ok) return null;
+    const texto = await response.text();
+    return texto ? JSON.parse(texto) : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function comentarPostApi(postId, autor, texto) {
-  const response = await fetch(`${API_BASE_URL}/posts/${postId}/comentarios`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ autor, nomeUsuario: autor, usuario: autor, texto }),
-  });
-  if (!response.ok) throw new Error('Erro ao comentar no post');
-  return await response.json();
+  try {
+    const idOriginal = String(postId).split('-page-')[0];
+    const response = await fetch(`${API_BASE_URL}/posts/${idOriginal}/comentarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ autor, nomeUsuario: autor, usuario: autor, texto }),
+    });
+    if (!response.ok) return null;
+    const body = await response.text();
+    return body ? JSON.parse(body) : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function buscarMensagensApi(u1, u2) {

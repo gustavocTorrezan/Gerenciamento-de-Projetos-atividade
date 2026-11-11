@@ -22,9 +22,22 @@ export default function App() {
   }, [usuarioLogado]);
 
   async function handleCurtir(postId) {
+    // Atualizacao otimista imediata no estado local
+    setPosts(prev =>
+      prev.map(p =>
+        String(p.id) === String(postId)
+          ? { ...p, curtidas: Number(p.curtidas || 0) + 1 }
+          : p
+      )
+    );
+
     try {
       const postAtualizado = await curtirPostApi(postId);
-      setPosts(prev => prev.map(p => (p.id === postId ? postAtualizado : p)));
+      if (postAtualizado && postAtualizado.id !== undefined) {
+        setPosts(prev =>
+          prev.map(p => (String(p.id) === String(postAtualizado.id) ? postAtualizado : p))
+        );
+      }
     } catch (e) {
       console.error(e);
     }
@@ -32,9 +45,27 @@ export default function App() {
 
   async function handleComentar(postId, textoComentario) {
     if (!textoComentario || !textoComentario.trim()) return;
+    const textoLimpo = textoComentario.trim();
+
+    // Atualizacao otimista imediata do comentario
+    setPosts(prev =>
+      prev.map(p => {
+        if (String(p.id) !== String(postId)) return p;
+        const atuais = Array.isArray(p.comentarios) ? p.comentarios : [];
+        return {
+          ...p,
+          comentarios: [...atuais, { id: Date.now(), autor: usuarioLogado.nomeUsuario, texto: textoLimpo }]
+        };
+      })
+    );
+
     try {
-      const postAtualizado = await comentarPostApi(postId, usuarioLogado.nomeUsuario, textoComentario.trim());
-      setPosts(prev => prev.map(p => (p.id === postId ? postAtualizado : p)));
+      const postAtualizado = await comentarPostApi(postId, usuarioLogado.nomeUsuario, textoLimpo);
+      if (postAtualizado && postAtualizado.id !== undefined) {
+        setPosts(prev =>
+          prev.map(p => (String(p.id) === String(postAtualizado.id) ? postAtualizado : p))
+        );
+      }
     } catch (e) {
       console.error(e);
     }

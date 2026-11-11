@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 
 export default function PostCard({ post, onCurtir, onComentar }) {
   const [comentarioTexto, setComentarioTexto] = useState('');
+  const [curtido, setCurtido] = useState(false);
+  const [totalCurtidas, setTotalCurtidas] = useState(Number(post?.curtidas || 0));
+
+  useEffect(() => {
+    setTotalCurtidas(Number(post?.curtidas || 0));
+  }, [post?.curtidas]);
 
   const nomeAutor = post?.nomeUsuario || 'estudante.cc';
   const avatarAutor =
     post?.avatarUrl ||
     `https://ui-avatars.com/api/?background=0095F6&color=fff&name=${encodeURIComponent(nomeAutor)}`;
   const listaComentarios = Array.isArray(post?.comentarios) ? post.comentarios : [];
+
+  function clicarCurtir() {
+    const novoValor = totalCurtidas + 1;
+    setCurtido(true);
+    setTotalCurtidas(novoValor);
+    if (onCurtir) {
+      onCurtir(post.id, novoValor);
+    }
+  }
 
   function enviarComentario() {
     if (!comentarioTexto.trim()) return;
@@ -33,9 +48,15 @@ export default function PostCard({ post, onCurtir, onComentar }) {
 
       <View style={styles.footer}>
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.likeButton} onPress={() => onCurtir && onCurtir(post.id)}>
-            <Text style={styles.likeIcon}>♥</Text>
-            <Text style={styles.likeCount}>{post.curtidas || 0} curtidas</Text>
+          <TouchableOpacity
+            style={[styles.likeButton, curtido && styles.likeButtonAtivo]}
+            onPress={clicarCurtir}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.likeIcon, curtido && styles.likeIconAtivo]}>♥</Text>
+            <Text style={[styles.likeCount, curtido && styles.likeCountAtivo]}>
+              {totalCurtidas} {totalCurtidas === 1 ? 'curtida' : 'curtidas'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -129,19 +150,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF0F3',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FFD6DF',
+  },
+  likeButtonAtivo: {
+    backgroundColor: '#ED4956',
+    borderColor: '#ED4956',
   },
   likeIcon: {
     color: '#ED4956',
     fontSize: 16,
     marginRight: 6,
   },
+  likeIconAtivo: {
+    color: '#FFFFFF',
+  },
   likeCount: {
     fontWeight: 'bold',
     fontSize: 13,
     color: '#262626',
+  },
+  likeCountAtivo: {
+    color: '#FFFFFF',
   },
   caption: {
     fontSize: 14,

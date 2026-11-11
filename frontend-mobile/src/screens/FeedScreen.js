@@ -11,6 +11,35 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
 
   const listaCompleta = [...posts, ...postsExtras];
 
+  function handleCurtirLocal(postId, novoTotal) {
+    setPostsExtras(prev =>
+      prev.map(p =>
+        String(p.id) === String(postId)
+          ? { ...p, curtidas: novoTotal ?? (Number(p.curtidas || 0) + 1) }
+          : p
+      )
+    );
+    if (onCurtir) {
+      onCurtir(postId);
+    }
+  }
+
+  function handleComentarLocal(postId, texto) {
+    setPostsExtras(prev =>
+      prev.map(p => {
+        if (String(p.id) !== String(postId)) return p;
+        const comentariosAtuais = Array.isArray(p.comentarios) ? p.comentarios : [];
+        return {
+          ...p,
+          comentarios: [...comentariosAtuais, { id: Date.now(), autor: usuarioAtual, texto }]
+        };
+      })
+    );
+    if (onComentar) {
+      onComentar(postId, texto);
+    }
+  }
+
   async function carregarMaisPosts() {
     if (carregandoMais || posts.length === 0) return;
     setCarregandoMais(true);
@@ -20,6 +49,7 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
       const lote = (Array.isArray(novos) && novos.length > 0 ? novos : posts.slice(0, 2)).map(
         (item, idx) => ({
           ...item,
+          id: `${item.id}-page-${proximaPagina}-${idx}`,
           keyUnica: `${item.id}-page-${proximaPagina}-${idx}`,
         })
       );
@@ -39,7 +69,11 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
         keyExtractor={(item, index) => String(item.keyUnica || item.id || index)}
         ListHeaderComponent={<StoriesBar usuarioAtual={usuarioAtual} />}
         renderItem={({ item }) => (
-          <PostCard post={item} onCurtir={onCurtir} onComentar={onComentar} />
+          <PostCard
+            post={item}
+            onCurtir={handleCurtirLocal}
+            onComentar={handleComentarLocal}
+          />
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
