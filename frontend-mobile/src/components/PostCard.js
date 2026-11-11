@@ -2,51 +2,74 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 
 export default function PostCard({ post, onCurtir, onComentar }) {
-  const [novoComentario, setNovoComentario] = useState('');
+  const [comentarioTexto, setComentarioTexto] = useState('');
+
+  const nomeAutor = post?.nomeUsuario || 'estudante.cc';
+  const avatarAutor =
+    post?.avatarUrl ||
+    `https://ui-avatars.com/api/?background=0095F6&color=fff&name=${encodeURIComponent(nomeAutor)}`;
+  const listaComentarios = Array.isArray(post?.comentarios) ? post.comentarios : [];
 
   function enviarComentario() {
-    if (!novoComentario.trim()) return;
-    onComentar(novoComentario);
-    setNovoComentario('');
+    if (!comentarioTexto.trim()) return;
+    onComentar && onComentar(post.id, comentarioTexto.trim());
+    setComentarioTexto('');
   }
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Image source={{ uri: post.fotoPerfilUsuarioUrl }} style={styles.avatar} />
-        <Text style={styles.username}>{post.nomeUsuario}</Text>
+        <Image source={{ uri: avatarAutor }} style={styles.avatar} />
+        <Text style={styles.username}>@{nomeAutor}</Text>
       </View>
-      <Image source={{ uri: post.imagemUrl }} style={styles.postImage} />
+
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: post.imagemUrl }}
+          style={styles.postImage}
+          resizeMode="cover"
+        />
+      </View>
+
       <View style={styles.footer}>
-        <View style={styles.actions}>
-          <TouchableOpacity onPress={onCurtir} style={styles.likeButton}>
-            <Text style={[styles.likeIcon, post.curtidoPeloUsuarioAtual && styles.liked]}>
-              {post.curtidoPeloUsuarioAtual ? '♥ Curtido' : '♡ Curtir'}
-            </Text>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.likeButton} onPress={() => onCurtir && onCurtir(post.id)}>
+            <Text style={styles.likeIcon}>♥</Text>
+            <Text style={styles.likeCount}>{post.curtidas || 0} curtidas</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.likes}>{post.quantidadeCurtidas} curtidas</Text>
-        <Text style={styles.caption}>
-          <Text style={styles.username}>{post.nomeUsuario} </Text>
-          {post.legenda}
-        </Text>
 
-        {post.comentarios && post.comentarios.map((c) => (
-          <Text key={String(c.id)} style={styles.commentText}>
-            <Text style={styles.username}>{c.nomeUsuario} </Text>
-            {c.texto}
+        {!!post.legenda && (
+          <Text style={styles.caption}>
+            <Text style={styles.captionUser}>@{nomeAutor} </Text>
+            {post.legenda}
           </Text>
-        ))}
+        )}
+
+        {listaComentarios.length > 0 && (
+          <View style={styles.commentsSection}>
+            {listaComentarios.map((c, index) => {
+              const autorCom = c.autor || c.nomeUsuario || 'usuario';
+              return (
+                <Text key={String(c.id || index)} style={styles.commentItem}>
+                  <Text style={styles.commentAuthor}>@{autorCom}: </Text>
+                  {c.texto}
+                </Text>
+              );
+            })}
+          </View>
+        )}
 
         <View style={styles.commentInputRow}>
           <TextInput
             style={styles.commentInput}
-            placeholder="Adicione um comentario..."
-            value={novoComentario}
-            onChangeText={setNovoComentario}
+            placeholder="Adicione um comentário..."
+            placeholderTextColor="#999"
+            value={comentarioTexto}
+            onChangeText={setComentarioTexto}
           />
-          <TouchableOpacity onPress={enviarComentario}>
-            <Text style={styles.sendText}>Publicar</Text>
+          <TouchableOpacity onPress={enviarComentario} style={styles.sendButton}>
+            <Text style={styles.sendButtonText}>Publicar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -55,20 +78,121 @@ export default function PostCard({ post, onCurtir, onComentar }) {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#FFFFFF', marginBottom: 15, borderBottomWidth: 1, borderBottomColor: '#EFEFEF' },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 10 },
-  avatar: { width: 34, height: 34, borderRadius: 17, marginRight: 10 },
-  username: { fontWeight: 'bold', fontSize: 14, color: '#262626' },
-  postImage: { width: '100%', height: 320, backgroundColor: '#EFEFEF' },
-  footer: { padding: 12 },
-  actions: { flexDirection: 'row', marginBottom: 8 },
-  likeButton: { paddingVertical: 4 },
-  likeIcon: { fontSize: 15, fontWeight: '600', color: '#262626' },
-  liked: { color: '#ED4956' },
-  likes: { fontWeight: 'bold', marginBottom: 5, fontSize: 14 },
-  caption: { fontSize: 14, color: '#262626', marginBottom: 6 },
-  commentText: { fontSize: 13, color: '#262626', marginTop: 3 },
-  commentInputRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, borderTopWidth: 1, borderTopColor: '#EFEFEF', paddingTop: 8 },
-  commentInput: { flex: 1, fontSize: 13, paddingVertical: 4 },
-  sendText: { color: '#0095F6', fontWeight: 'bold', fontSize: 13, marginLeft: 10 },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    marginBottom: 18,
+    overflow: 'hidden',
+    width: '100%',
+    maxWidth: 540,
+    alignSelf: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+    backgroundColor: '#EFEFEF',
+  },
+  username: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    color: '#262626',
+  },
+  imageContainer: {
+    width: '100%',
+    height: 420,
+    backgroundColor: '#F5F5F5',
+    overflow: 'hidden',
+  },
+  postImage: {
+    width: '100%',
+    height: '100%',
+  },
+  footer: {
+    padding: 14,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  likeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0F3',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  likeIcon: {
+    color: '#ED4956',
+    fontSize: 16,
+    marginRight: 6,
+  },
+  likeCount: {
+    fontWeight: 'bold',
+    fontSize: 13,
+    color: '#262626',
+  },
+  caption: {
+    fontSize: 14,
+    color: '#262626',
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  captionUser: {
+    fontWeight: 'bold',
+  },
+  commentsSection: {
+    backgroundColor: '#FAFAFA',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  commentItem: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 4,
+  },
+  commentAuthor: {
+    fontWeight: 'bold',
+    color: '#262626',
+  },
+  commentInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    paddingTop: 10,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#262626',
+  },
+  sendButton: {
+    marginLeft: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  sendButtonText: {
+    color: '#0095F6',
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
 });
