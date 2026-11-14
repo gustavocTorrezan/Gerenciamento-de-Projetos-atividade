@@ -38,3 +38,12 @@ Este repositorio abriga o desenvolvimento de um clone funcional do Instagram con
   - Implementação do sistema de Stories com visualização temporizada e publicação em tempo real.
   - Paginação e Scroll Infinito no Feed de publicações.
   - Padronização visual e dimensionamento responsivo de imagens para a versão Web Desktop.
+
+
+## Sprint Final - Acabamento Visual e Visualização de Posts no Perfil
+- **Product Owner (PO):** Frederico Rodrigues (`FredRodriguess`)
+- **Entregas de Finalização:**
+  - Modal de visualização completa das publicações ao clicar nas fotos da grade do Perfil.
+  - Edição rápida de biografia na tela de Perfil e divisória visual de publicações.
+  - Duplo clique para curtir nas fotos do Feed, opção de salvar post e pré-visualização de imagem ao publicar.
+  - Refinamento visual de cabeçalho, espaçamentos e status online no Direct.
