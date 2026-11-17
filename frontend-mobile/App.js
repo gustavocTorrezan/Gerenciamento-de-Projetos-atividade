@@ -22,7 +22,6 @@ export default function App() {
   }, [usuarioLogado]);
 
   async function handleCurtir(postId) {
-    // Atualizacao otimista imediata no estado local
     setPosts(prev =>
       prev.map(p =>
         String(p.id) === String(postId)
@@ -47,7 +46,6 @@ export default function App() {
     if (!textoComentario || !textoComentario.trim()) return;
     const textoLimpo = textoComentario.trim();
 
-    // Atualizacao otimista imediata do comentario
     setPosts(prev =>
       prev.map(p => {
         if (String(p.id) !== String(postId)) return p;
@@ -121,6 +119,11 @@ export default function App() {
             <ProfileScreen
               usuario={usuarioLogado}
               posts={posts.filter(p => p.nomeUsuario === usuarioLogado.nomeUsuario)}
+              onCurtir={handleCurtir}
+              onComentar={handleComentar}
+              onAtualizarBio={(novaBio) =>
+                setUsuarioLogado(prev => ({ ...prev, bio: novaBio }))
+              }
             />
           )}
         </View>
