@@ -1,22 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Header from './src/components/Header';
 import FeedScreen from './src/screens/FeedScreen';
+import SearchScreen from './src/screens/SearchScreen';
 import CreatePostScreen from './src/screens/CreatePostScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import DirectScreen from './src/screens/DirectScreen';
-import { buscarPostsApi, criarPostApi, curtirPostApi, comentarPostApi } from './src/services/api';
+import {
+  buscarPostsApi,
+  criarPostApi,
+  curtirPostApi,
+  comentarPostApi,
+  listarUsuariosApi
+} from './src/services/api';
+import { FONTS, COLORS } from './src/styles/theme';
 
 export default function App() {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
   const [abaAtiva, setAbaAtiva] = useState('feed');
   const [posts, setPosts] = useState([]);
+  const [usuariosCadastrados, setUsuariosCadastrados] = useState([]);
+  const [perfilVisitado, setPerfilVisitado] = useState(null);
+  const [directDestinatario, setDirectDestinatario] = useState(null);
+
+  // Carrega a fonte Plus Jakarta Sans na Web
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const idLink = 'instacc-google-fonts';
+      if (!document.getElementById(idLink)) {
+        const link = document.createElement('link');
+        link.id = idLink;
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap';
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (usuarioLogado) {
       buscarPostsApi().then((dados) => {
         setPosts(Array.isArray(dados) ? dados : []);
+      });
+      listarUsuariosApi().then((lista) => {
+        if (Array.isArray(lista)) setUsuariosCadastrados(lista);
       });
     }
   }, [usuarioLogado]);
@@ -69,14 +98,51 @@ export default function App() {
     }
   }
 
+  function abrirPerfilDeUsuario(nomeUsuario) {
+    if (!nomeUsuario) return;
+    if (nomeUsuario === usuarioLogado.nomeUsuario) {
+      setPerfilVisitado(null);
+      setAbaAtiva('perfil');
+      return;
+    }
+    const encontrado = usuariosCadastrados.find(
+      u => u.nomeUsuario.toLowerCase() === nomeUsuario.toLowerCase()
+    );
+    setPerfilVisitado(
+      encontrado || {
+        nomeUsuario,
+        bio: 'Ciência da Computação • UniFil'
+      }
+    );
+    setAbaAtiva('perfil');
+  }
+
+  function abrirConversaDirect(nomeUsuario) {
+    setDirectDestinatario(nomeUsuario);
+    setAbaAtiva('direct');
+  }
+
   function realizarLogout() {
     setAbaAtiva('feed');
+    setPerfilVisitado(null);
+    setDirectDestinatario(null);
     setUsuarioLogado(null);
   }
 
   if (!usuarioLogado) {
-    return <LoginScreen onLoginSucesso={(u) => { setAbaAtiva('feed'); setUsuarioLogado(u); }} />;
+    return (
+      <LoginScreen
+        onLoginSucesso={(u) => {
+          setAbaAtiva('feed');
+          setPerfilVisitado(null);
+          setUsuarioLogado(u);
+        }}
+      />
+    );
   }
+
+  const usuarioExibidoNoPerfil = perfilVisitado || usuarioLogado;
+  const ehMeuPerfil = usuarioExibidoNoPerfil.nomeUsuario === usuarioLogado.nomeUsuario;
 
   return (
     <SafeAreaView style={styles.outerBackground}>
@@ -84,9 +150,11 @@ export default function App() {
         <View style={styles.topBarContainer}>
           <Header />
           <View style={styles.topRightActions}>
-            <Text style={styles.badgeUsuario}>@{usuarioLogado.nomeUsuario}</Text>
+            <TouchableOpacity onPress={() => abrirPerfilDeUsuario(usuarioLogado.nomeUsuario)}>
+              <Text style={styles.badgeUsuario}>@{usuarioLogado.nomeUsuario}</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.botaoSair} onPress={realizarLogout}>
-              <Text style={styles.textoBotaoSair}>Sair</Text>
+              <Ionicons name="log-out-outline" size={20} color={COLORS.textPrimary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -98,9 +166,26 @@ export default function App() {
               usuarioAtual={usuarioLogado.nomeUsuario}
               onCurtir={handleCurtir}
               onComentar={handleComentar}
+              onAbrirPerfil={abrirPerfilDeUsuario}
+              onAbrirDirect={abrirConversaDirect}
             />
           )}
-          {abaAtiva === 'direct' && <DirectScreen usuarioAtual={usuarioLogado.nomeUsuario} />}
+
+          {abaAtiva === 'pesquisar' && (
+            <SearchScreen
+              posts={posts}
+              usuarioAtual={usuarioLogado.nomeUsuario}
+              onAbrirPerfil={abrirPerfilDeUsuario}
+            />
+          )}
+
+          {abaAtiva === 'direct' && (
+            <DirectScreen
+              usuarioAtual={usuarioLogado.nomeUsuario}
+              destinatarioInicial={directDestinatario}
+            />
+          )}
+
           {abaAtiva === 'criar' && (
             <CreatePostScreen
               onPublicar={async (img, leg) => {
@@ -115,12 +200,19 @@ export default function App() {
               }}
             />
           )}
+
           {abaAtiva === 'perfil' && (
             <ProfileScreen
-              usuario={usuarioLogado}
-              posts={posts.filter(p => p.nomeUsuario === usuarioLogado.nomeUsuario)}
+              usuario={usuarioExibidoNoPerfil}
+              ehProprioPerfil={ehMeuPerfil}
+              posts={posts.filter(p => p.nomeUsuario === usuarioExibidoNoPerfil.nomeUsuario)}
               onCurtir={handleCurtir}
               onComentar={handleComentar}
+              onVoltar={() => {
+                setPerfilVisitado(null);
+                setAbaAtiva('pesquisar');
+              }}
+              onEnviarMensagem={abrirConversaDirect}
               onAtualizarBio={(novaBio) =>
                 setUsuarioLogado(prev => ({ ...prev, bio: novaBio }))
               }
@@ -129,17 +221,74 @@ export default function App() {
         </View>
 
         <View style={styles.tabBar}>
-          <TouchableOpacity onPress={() => setAbaAtiva('feed')} style={styles.tabItem}>
-            <Text style={[styles.tabTexto, abaAtiva === 'feed' && styles.ativo]}>🏠 Feed</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setPerfilVisitado(null);
+              setAbaAtiva('feed');
+            }}
+            style={styles.tabItem}
+          >
+            <Ionicons
+              name={abaAtiva === 'feed' ? 'home' : 'home-outline'}
+              size={24}
+              color={COLORS.textPrimary}
+            />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setAbaAtiva('direct')} style={styles.tabItem}>
-            <Text style={[styles.tabTexto, abaAtiva === 'direct' && styles.ativo]}>💬 Direct</Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              setPerfilVisitado(null);
+              setAbaAtiva('pesquisar');
+            }}
+            style={styles.tabItem}
+          >
+            <Ionicons
+              name={abaAtiva === 'pesquisar' ? 'search' : 'search-outline'}
+              size={24}
+              color={COLORS.textPrimary}
+            />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setAbaAtiva('criar')} style={styles.tabItem}>
-            <Text style={[styles.tabTexto, abaAtiva === 'criar' && styles.ativo]}>➕ Postar</Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              setPerfilVisitado(null);
+              setAbaAtiva('criar');
+            }}
+            style={styles.tabItem}
+          >
+            <Ionicons
+              name={abaAtiva === 'criar' ? 'add-circle' : 'add-circle-outline'}
+              size={26}
+              color={COLORS.textPrimary}
+            />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setAbaAtiva('perfil')} style={styles.tabItem}>
-            <Text style={[styles.tabTexto, abaAtiva === 'perfil' && styles.ativo]}>👤 Perfil</Text>
+
+          <TouchableOpacity
+            onPress={() => {
+              setPerfilVisitado(null);
+              setAbaAtiva('direct');
+            }}
+            style={styles.tabItem}
+          >
+            <Ionicons
+              name={abaAtiva === 'direct' ? 'paper-plane' : 'paper-plane-outline'}
+              size={23}
+              color={COLORS.textPrimary}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setPerfilVisitado(null);
+              setAbaAtiva('perfil');
+            }}
+            style={styles.tabItem}
+          >
+            <Ionicons
+              name={abaAtiva === 'perfil' && ehMeuPerfil ? 'person-circle' : 'person-circle-outline'}
+              size={26}
+              color={COLORS.textPrimary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -150,25 +299,25 @@ export default function App() {
 const styles = StyleSheet.create({
   outerBackground: {
     flex: 1,
-    backgroundColor: '#ECEEF2',
+    backgroundColor: COLORS.background,
   },
   appWrapper: {
     flex: 1,
     width: '100%',
-    maxWidth: 680,
+    maxWidth: 520,
     alignSelf: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: '#DBDBDB',
+    borderColor: COLORS.border,
   },
   topBarContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
-    backgroundColor: '#FFF',
+    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.surface,
     paddingRight: 14,
   },
   topRightActions: {
@@ -176,46 +325,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeUsuario: {
+    fontFamily: FONTS.medium,
     fontSize: 13,
-    color: '#555',
+    color: COLORS.textSecondary,
     fontWeight: '600',
-    marginRight: 10,
+    marginRight: 12,
   },
   botaoSair: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: '#ED4956',
-    borderRadius: 6,
-  },
-  textoBotaoSair: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 12,
+    padding: 4,
   },
   conteudo: {
     flex: 1,
-    backgroundColor: '#F6F7F9',
+    backgroundColor: COLORS.background,
   },
   tabBar: {
-    height: 58,
+    height: 52,
     borderTopWidth: 1,
-    borderTopColor: '#EAEAEA',
+    borderTopColor: COLORS.border,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
   },
   tabItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  tabTexto: {
-    fontSize: 14,
-    color: '#8E8E8E',
-    fontWeight: '500',
-  },
-  ativo: {
-    fontWeight: 'bold',
-    color: '#0095F6',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
