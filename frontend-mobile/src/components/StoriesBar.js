@@ -9,9 +9,11 @@ import {
   TextInput,
   StyleSheet
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { buscarStoriesApi, criarStoryApi } from '../services/api';
+import { FONTS, COLORS } from '../styles/theme';
 
-export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
+export default function StoriesBar({ usuarioAtual = 'estudante.cc', onAbrirPerfil }) {
   const [stories, setStories] = useState([]);
   const [storyAtivo, setStoryAtivo] = useState(null);
   const [modalCriar, setModalCriar] = useState(false);
@@ -65,12 +67,12 @@ export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
           <View style={[styles.anelStory, styles.anelNovo]}>
             <Image
               source={{
-                uri: `https://ui-avatars.com/api/?background=0095F6&color=fff&name=${encodeURIComponent(usuarioAtual)}`
+                uri: `https://ui-avatars.com/api/?background=EFEFEF&color=262626&name=${encodeURIComponent(usuarioAtual)}`
               }}
               style={styles.avatar}
             />
             <View style={styles.badgeMais}>
-              <Text style={styles.textoMais}>+</Text>
+              <Ionicons name="add" size={14} color="#FFFFFF" />
             </View>
           </View>
           <Text style={styles.nomeStory} numberOfLines={1}>Seu story</Text>
@@ -97,7 +99,6 @@ export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
         ))}
       </ScrollView>
 
-      {/* Modal Visualizador de Story */}
       <Modal visible={!!storyAtivo} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           {storyAtivo && (
@@ -107,17 +108,24 @@ export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
               </View>
 
               <View style={styles.storyHeader}>
-                <View style={styles.storyAutorInfo}>
+                <TouchableOpacity
+                  style={styles.storyAutorInfo}
+                  onPress={() => {
+                    const user = storyAtivo.nomeUsuario;
+                    setStoryAtivo(null);
+                    onAbrirPerfil && onAbrirPerfil(user);
+                  }}
+                >
                   <Image
                     source={{
                       uri: storyAtivo.avatarUrl || `https://ui-avatars.com/api/?background=E1306C&color=fff&name=${encodeURIComponent(storyAtivo.nomeUsuario)}`
                     }}
                     style={styles.avatarPequeno}
                   />
-                  <Text style={styles.storyAutorNome}>@{storyAtivo.nomeUsuario}</Text>
-                </View>
+                  <Text style={styles.storyAutorNome}>{storyAtivo.nomeUsuario}</Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => setStoryAtivo(null)} style={styles.botaoFechar}>
-                  <Text style={styles.textoFechar}>✕</Text>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
 
@@ -137,37 +145,33 @@ export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
         </View>
       </Modal>
 
-      {/* Modal Criar Novo Story */}
-      <Modal visible={modalCriar} transparent animationType="slide">
+      <Modal visible={modalCriar} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.cardCriarStory}>
-            <Text style={styles.tituloCriar}>Publicar novo Story</Text>
+            <View style={styles.modalCriarHeader}>
+              <Text style={styles.tituloCriar}>Novo story</Text>
+              <TouchableOpacity onPress={() => setModalCriar(false)}>
+                <Ionicons name="close" size={22} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
             <TextInput
               style={styles.input}
-              placeholder="Cole a URL da imagem do Story..."
+              placeholder="URL da imagem"
+              placeholderTextColor={COLORS.textMuted}
               value={novaUrl}
               onChangeText={setNovaUrl}
             />
             <TextInput
               style={styles.input}
-              placeholder="Legenda rápida (opcional)..."
+              placeholder="Legenda (opcional)"
+              placeholderTextColor={COLORS.textMuted}
               value={novaLegenda}
               onChangeText={setNovaLegenda}
             />
-            <View style={styles.botoesCriarRow}>
-              <TouchableOpacity
-                style={[styles.botaoModal, styles.botaoCancelar]}
-                onPress={() => setModalCriar(false)}
-              >
-                <Text style={styles.textoCancelar}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.botaoModal, styles.botaoPublicar]}
-                onPress={publicarStory}
-              >
-                <Text style={styles.textoPublicar}>Compartilhar</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.botaoPublicar} onPress={publicarStory}>
+              <Text style={styles.textoPublicar}>Compartilhar no story</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -177,12 +181,11 @@ export default function StoriesBar({ usuarioAtual = 'estudante.cc' }) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#EAEAEA',
+    borderBottomColor: COLORS.border,
     paddingVertical: 12,
-    marginBottom: 8,
-    borderRadius: 10,
+    marginBottom: 10,
   },
   scrollContent: {
     paddingHorizontal: 14,
@@ -191,51 +194,45 @@ const styles = StyleSheet.create({
   storyItem: {
     alignItems: 'center',
     marginRight: 16,
-    width: 72,
+    width: 68,
   },
   anelStory: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2.5,
-    borderColor: '#E1306C',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: '#DD2A7B',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 5,
     position: 'relative',
   },
   anelNovo: {
-    borderColor: '#0095F6',
+    borderColor: COLORS.border,
   },
   avatar: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: '#F0F0F0',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.borderLight,
   },
   badgeMais: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#0095F6',
+    bottom: -1,
+    right: -1,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  textoMais: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: 'bold',
-    lineHeight: 16,
-  },
   nomeStory: {
+    fontFamily: FONTS.regular,
     fontSize: 11,
-    color: '#262626',
-    fontWeight: '500',
+    color: COLORS.textPrimary,
     textAlign: 'center',
   },
   modalOverlay: {
@@ -247,20 +244,20 @@ const styles = StyleSheet.create({
   },
   storyViewerCard: {
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 390,
     height: 580,
     backgroundColor: '#121212',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
     justifyContent: 'space-between',
   },
   barraProgressoFundo: {
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.28)',
     width: '100%',
   },
   barraProgressoAtiva: {
-    height: 4,
+    height: 3,
     backgroundColor: '#FFFFFF',
   },
   storyHeader: {
@@ -275,27 +272,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarPequeno: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     marginRight: 10,
   },
   storyAutorNome: {
+    fontFamily: FONTS.bold,
     color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '600',
+    fontSize: 13,
   },
   botaoFechar: {
-    padding: 6,
-  },
-  textoFechar: {
-    color: '#FFF',
-    fontSize: 20,
-    fontWeight: 'bold',
+    padding: 4,
   },
   storyImagemPrincipal: {
     width: '100%',
-    height: 440,
+    height: 445,
     backgroundColor: '#1E1E1E',
   },
   legendaOverlay: {
@@ -303,57 +296,53 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.65)',
   },
   textoLegendaStory: {
+    fontFamily: FONTS.regular,
     color: '#FFF',
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
   },
   cardCriarStory: {
     width: '100%',
-    maxWidth: 400,
-    backgroundColor: '#FFF',
-    borderRadius: 14,
+    maxWidth: 380,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
     padding: 20,
   },
+  modalCriarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   tituloCriar: {
-    fontSize: 17,
-    fontWeight: 'bold',
-    color: '#262626',
-    marginBottom: 14,
-    textAlign: 'center',
+    fontFamily: FONTS.bold,
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
   },
   input: {
-    backgroundColor: '#FAFAFA',
+    fontFamily: FONTS.regular,
+    backgroundColor: COLORS.inputBg,
     borderWidth: 1,
-    borderColor: '#DBDBDB',
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
-    marginBottom: 12,
-  },
-  botoesCriarRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 6,
-  },
-  botaoModal: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginLeft: 10,
-  },
-  botaoCancelar: {
-    backgroundColor: '#EFEFEF',
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    marginBottom: 10,
   },
   botaoPublicar: {
-    backgroundColor: '#0095F6',
-  },
-  textoCancelar: {
-    color: '#262626',
-    fontWeight: '600',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 11,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 4,
   },
   textoPublicar: {
+    fontFamily: FONTS.bold,
     color: '#FFF',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
