@@ -87,7 +87,7 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
                 <Text style={styles.loaderText}>Carregando mais publicações...</Text>
               </>
             ) : (
-              <Text style={styles.loaderHint}>Role para baixo para ver mais posts ↓</Text>
+              <Text style={styles.loaderHint}>Você chegou ao fim das novidades • Role para carregar mais ↓</Text>
             )}
           </View>
         }
