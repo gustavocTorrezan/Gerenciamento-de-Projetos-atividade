@@ -33,10 +33,18 @@ public class PostController {
     }
 
     @RequestMapping(value = "/{id}/curtir", method = {RequestMethod.POST, RequestMethod.PUT})
-    public ResponseEntity<Post> curtirPost(@PathVariable Long id) {
-        return bancoDeDados.alternarCurtida(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Post> curtirPost(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "true") boolean curtir) {
+        for (Post p : bancoDeDados.getPosts()) {
+            if (p.getId() != null && p.getId().equals(id)) {
+                int atual = p.getCurtidas();
+                int novoValor = curtir ? atual + 1 : Math.max(0, atual - 1);
+                p.setCurtidas(novoValor);
+                return ResponseEntity.ok(p);
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/{id}/comentarios")

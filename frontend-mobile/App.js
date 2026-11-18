@@ -50,22 +50,27 @@ export default function App() {
     }
   }, [usuarioLogado]);
 
-  async function handleCurtir(postId) {
+  async function handleCurtir(postId, novoTotal, curtidoAgora = true) {
+    const idBase = String(postId).split('-page-')[0];
+
     setPosts(prev =>
-      prev.map(p =>
-        String(p.id) === String(postId)
-          ? { ...p, curtidas: Number(p.curtidas || 0) + 1 }
-          : p
-      )
+      prev.map(p => {
+        if (String(p.id) !== idBase && String(p.id) !== String(postId)) return p;
+        const atual = Number(p.curtidas ?? p.likes ?? 0);
+        const atualizado = typeof novoTotal === 'number'
+          ? novoTotal
+          : (curtidoAgora ? atual + 1 : Math.max(0, atual - 1));
+        return {
+          ...p,
+          curtidas: atualizado,
+          likes: atualizado,
+          curtidoPeloUsuario: curtidoAgora,
+        };
+      })
     );
 
     try {
-      const postAtualizado = await curtirPostApi(postId);
-      if (postAtualizado && postAtualizado.id !== undefined) {
-        setPosts(prev =>
-          prev.map(p => (String(p.id) === String(postAtualizado.id) ? postAtualizado : p))
-        );
-      }
+      await curtirPostApi(idBase, curtidoAgora);
     } catch (e) {
       console.error(e);
     }

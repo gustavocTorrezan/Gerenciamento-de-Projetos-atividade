@@ -49,4 +49,12 @@ public class Post {
     public List<Comentario> getComentarios() { return comentarios; }
     public void setComentarios(List<Comentario> comentarios) { this.comentarios = comentarios; }
     public void adicionarComentario(Comentario comentario) { this.comentarios.add(comentario); }
+
+    public int getCurtidas() {
+        return this.quantidadeCurtidas;
+    }
+
+    public void setCurtidas(int curtidas) {
+        this.quantidadeCurtidas = curtidas;
+    }
 }

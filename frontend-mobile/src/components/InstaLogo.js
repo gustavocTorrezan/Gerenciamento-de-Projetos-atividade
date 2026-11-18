@@ -1,29 +1,54 @@
 import React from 'react';
-import { Image, View } from 'react-native';
-
-const SVG_RAW = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 44" width="190" height="44" fill="none">
-  <defs>
-    <linearGradient id="instaGrad" x1="2" y1="40" x2="40" y2="4" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F58529"/>
-      <stop offset="45%" stop-color="#DD2A7B"/>
-      <stop offset="100%" stop-color="#8134AF"/>
-    </linearGradient>
-  </defs>
-  <rect x="4" y="6" width="32" height="32" rx="9" stroke="url(#instaGrad)" stroke-width="2.8"/>
-  <circle cx="20" cy="22" r="7.2" stroke="url(#instaGrad)" stroke-width="2.6"/>
-  <circle cx="29.2" cy="12.8" r="1.8" fill="#DD2A7B"/>
-  <text x="45" y="29" fill="#262626" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="22" font-weight="800" letter-spacing="-0.8">InstaCC</text>
-</svg>`;
-
-const SVG_DATA_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(SVG_RAW);
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { FONTS, COLORS } from '../styles/theme';
 
 export default function InstaLogo({ width = 148, height = 34 }) {
+  const compacto = width < 155;
+  const iconBoxSize = compacto ? 28 : 34;
+  const iconSize = compacto ? 17 : 21;
+  const fontSize = compacto ? 20 : 24;
+
+  const gradienteWeb =
+    Platform.OS === 'web'
+      ? { backgroundImage: 'linear-gradient(45deg, #F58529 0%, #DD2A7B 50%, #8134AF 100%)' }
+      : {};
+
   return (
-    <View style={{ width, height, justifyContent: 'center' }}>
-      <Image
-        source={{ uri: SVG_DATA_URI }}
-        style={{ width, height, resizeMode: 'contain' }}
-      />
+    <View style={[styles.container, { height }]}>
+      <View
+        style={[
+          styles.iconBadge,
+          {
+            width: iconBoxSize,
+            height: iconBoxSize,
+            borderRadius: compacto ? 8 : 10,
+          },
+          gradienteWeb,
+        ]}
+      >
+        <Ionicons name="camera-outline" size={iconSize} color="#FFFFFF" />
+      </View>
+      <Text style={[styles.wordmark, { fontSize }]}>InstaCC</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconBadge: {
+    backgroundColor: '#DD2A7B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 9,
+  },
+  wordmark: {
+    fontFamily: FONTS.bold,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.7,
+  },
+});

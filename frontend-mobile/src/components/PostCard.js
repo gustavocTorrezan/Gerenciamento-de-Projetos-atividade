@@ -13,16 +13,22 @@ import { FONTS, COLORS } from '../styles/theme';
 
 export default function PostCard({ post, onCurtir, onComentar, onAbrirPerfil, onAbrirDirect }) {
   const [comentarioTexto, setComentarioTexto] = useState('');
-  const [curtido, setCurtido] = useState(false);
+  const [curtido, setCurtido] = useState(Boolean(post?.curtidoPeloUsuario));
   const [salvo, setSalvo] = useState(false);
   const [mostrarCoracaoDuplo, setMostrarCoracaoDuplo] = useState(false);
-  const [totalCurtidas, setTotalCurtidas] = useState(Number(post?.curtidas || 0));
+  const [totalCurtidas, setTotalCurtidas] = useState(Number(post?.curtidas ?? post?.likes ?? 0));
   const ultimoToqueRef = useRef(0);
   const inputComentarioRef = useRef(null);
 
   useEffect(() => {
-    setTotalCurtidas(Number(post?.curtidas || 0));
-  }, [post?.curtidas]);
+    setTotalCurtidas(Number(post?.curtidas ?? post?.likes ?? 0));
+  }, [post?.curtidas, post?.likes]);
+
+  useEffect(() => {
+    if (typeof post?.curtidoPeloUsuario === 'boolean') {
+      setCurtido(post.curtidoPeloUsuario);
+    }
+  }, [post?.curtidoPeloUsuario]);
 
   const nomeAutor = post?.nomeUsuario || 'estudante.cc';
   const avatarAutor =
@@ -31,11 +37,16 @@ export default function PostCard({ post, onCurtir, onComentar, onAbrirPerfil, on
   const listaComentarios = Array.isArray(post?.comentarios) ? post.comentarios : [];
 
   function clicarCurtir() {
-    const novoValor = totalCurtidas + 1;
-    setCurtido(true);
+    const proximoEstado = !curtido;
+    const novoValor = proximoEstado
+      ? totalCurtidas + 1
+      : Math.max(0, totalCurtidas - 1);
+
+    setCurtido(proximoEstado);
     setTotalCurtidas(novoValor);
+
     if (onCurtir) {
-      onCurtir(post.id, novoValor);
+      onCurtir(post.id, novoValor, proximoEstado);
     }
   }
 

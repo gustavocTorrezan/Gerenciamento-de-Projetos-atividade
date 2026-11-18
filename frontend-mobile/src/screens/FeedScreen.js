@@ -19,16 +19,19 @@ export default function FeedScreen({
 
   const listaCompleta = [...posts, ...postsExtras];
 
-  function handleCurtirLocal(postId, novoTotal) {
+  function handleCurtirLocal(postId, novoTotal, curtidoAgora = true) {
     setPostsExtras(prev =>
-      prev.map(p =>
-        String(p.id) === String(postId)
-          ? { ...p, curtidas: novoTotal ?? (Number(p.curtidas || 0) + 1) }
-          : p
-      )
+      prev.map(p => {
+        if (String(p.id) !== String(postId)) return p;
+        const atual = Number(p.curtidas ?? p.likes ?? 0);
+        const atualizado = typeof novoTotal === 'number'
+          ? novoTotal
+          : (curtidoAgora ? atual + 1 : Math.max(0, atual - 1));
+        return { ...p, curtidas: atualizado, likes: atualizado, curtidoPeloUsuario: curtidoAgora };
+      })
     );
     if (onCurtir) {
-      onCurtir(postId);
+      onCurtir(postId, novoTotal, curtidoAgora);
     }
   }
 
