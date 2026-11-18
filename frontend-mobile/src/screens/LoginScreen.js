@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { loginApi, registrarApi } from '../services/api';
+import InstaLogo from '../components/InstaLogo';
+import { FONTS, COLORS } from '../styles/theme';
 
 export default function LoginScreen({ onLoginSucesso }) {
   const [modoCadastro, setModoCadastro] = useState(false);
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
-  const [sucessoMsg, setSucessoMsg] = useState('');
   const [carregando, setCarregando] = useState(false);
 
   async function submeter() {
     setErro('');
-    setSucessoMsg('');
-
     const userLimpo = usuario.trim();
     const senhaLimpa = senha.trim();
 
     if (!userLimpo || !senhaLimpa) {
-      setErro('Preencha o nome de usuário e a senha.');
+      setErro('Informe seu nome de usuário e senha.');
       return;
     }
 
@@ -34,28 +33,25 @@ export default function LoginScreen({ onLoginSucesso }) {
     } catch (e) {
       setErro(
         modoCadastro
-          ? (e.message || 'Erro ao criar conta. Tente outro nome de usuário.')
-          : 'Usuário ou senha incorretos. (Teste: estudante.cc / 123)'
+          ? (e.message || 'Não foi possível criar a conta.')
+          : 'Usuário ou senha incorretos.'
       );
     } finally {
       setCarregando(false);
     }
   }
 
-  function alternarModo() {
-    setErro('');
-    setSucessoMsg('');
-    setModoCadastro(!modoCadastro);
-  }
-
   return (
     <View style={styles.outer}>
       <View style={styles.card}>
-        <Text style={styles.logo}>InstaCC</Text>
+        <View style={styles.logoWrapper}>
+          <InstaLogo width={182} height={42} />
+        </View>
+
         <Text style={styles.subtitulo}>
           {modoCadastro
-            ? 'Cadastre-se para ver fotos e vídeos dos seus amigos.'
-            : 'Entre com sua conta acadêmica para continuar.'}
+            ? 'Cadastre-se para acompanhar fotos e novidades da turma.'
+            : 'Entre com sua conta para continuar.'}
         </Text>
 
         {!!erro && (
@@ -64,16 +60,10 @@ export default function LoginScreen({ onLoginSucesso }) {
           </View>
         )}
 
-        {!!sucessoMsg && (
-          <View style={styles.sucessoBox}>
-            <Text style={styles.sucessoTexto}>{sucessoMsg}</Text>
-          </View>
-        )}
-
         <TextInput
           style={styles.input}
-          placeholder="Nome de usuário (ex: estudante.cc)"
-          placeholderTextColor="#999"
+          placeholder="Nome de usuário"
+          placeholderTextColor={COLORS.textMuted}
           autoCapitalize="none"
           value={usuario}
           onChangeText={setUsuario}
@@ -82,10 +72,11 @@ export default function LoginScreen({ onLoginSucesso }) {
         <TextInput
           style={styles.input}
           placeholder="Senha"
-          placeholderTextColor="#999"
+          placeholderTextColor={COLORS.textMuted}
           secureTextEntry
           value={senha}
           onChangeText={setSenha}
+          onSubmitEditing={submeter}
         />
 
         <TouchableOpacity
@@ -97,7 +88,7 @@ export default function LoginScreen({ onLoginSucesso }) {
             <ActivityIndicator size="small" color="#FFF" />
           ) : (
             <Text style={styles.textoBotaoPrincipal}>
-              {modoCadastro ? 'Cadastrar e Entrar' : 'Entrar'}
+              {modoCadastro ? 'Cadastre-se' : 'Entrar'}
             </Text>
           )}
         </TouchableOpacity>
@@ -108,11 +99,18 @@ export default function LoginScreen({ onLoginSucesso }) {
           <View style={styles.linha} />
         </View>
 
-        <TouchableOpacity onPress={alternarModo} style={styles.botaoAlternar}>
-          <Text style={styles.textoAlternar}>
-            {modoCadastro
-              ? 'Já tem uma conta? Conecte-se'
-              : 'Não tem uma conta? Cadastre-se'}
+        <TouchableOpacity
+          onPress={() => {
+            setErro('');
+            setModoCadastro(!modoCadastro);
+          }}
+          style={styles.botaoAlternar}
+        >
+          <Text style={styles.textoSecundario}>
+            {modoCadastro ? 'Tem uma conta? ' : 'Não tem uma conta? '}
+            <Text style={styles.textoLink}>
+              {modoCadastro ? 'Conecte-se' : 'Cadastre-se'}
+            </Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -123,86 +121,74 @@ export default function LoginScreen({ onLoginSucesso }) {
 const styles = StyleSheet.create({
   outer: {
     flex: 1,
-    backgroundColor: '#F6F7F9',
+    backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   card: {
     width: '100%',
-    maxWidth: 380,
-    backgroundColor: '#FFFFFF',
+    maxWidth: 360,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#DBDBDB',
-    borderRadius: 12,
-    paddingHorizontal: 28,
-    paddingVertical: 34,
+    borderColor: COLORS.border,
+    borderRadius: 4,
+    paddingHorizontal: 32,
+    paddingVertical: 36,
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 34,
-    fontWeight: 'bold',
-    color: '#262626',
-    marginBottom: 8,
+  logoWrapper: {
+    marginBottom: 14,
+    alignItems: 'center',
   },
   subtitulo: {
-    fontSize: 13,
-    color: '#8E8E8E',
+    fontFamily: FONTS.medium,
+    fontSize: 14,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     marginBottom: 22,
-    lineHeight: 18,
+    lineHeight: 19,
   },
   erroBox: {
     width: '100%',
-    backgroundColor: '#FFF0F3',
+    backgroundColor: '#FFF5F5',
     borderWidth: 1,
-    borderColor: '#FFD6DF',
-    borderRadius: 6,
+    borderColor: '#FED7D7',
+    borderRadius: 4,
     padding: 10,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   erroTexto: {
-    color: '#ED4956',
+    fontFamily: FONTS.medium,
+    color: COLORS.danger,
     fontSize: 12,
     textAlign: 'center',
-    fontWeight: '600',
-  },
-  sucessoBox: {
-    width: '100%',
-    backgroundColor: '#E8F8F0',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 14,
-  },
-  sucessoTexto: {
-    color: '#1E8E3E',
-    fontSize: 12,
-    textAlign: 'center',
-    fontWeight: '600',
   },
   input: {
     width: '100%',
-    backgroundColor: '#FAFAFA',
+    fontFamily: FONTS.regular,
+    backgroundColor: COLORS.inputBg,
     borderWidth: 1,
-    borderColor: '#DBDBDB',
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 14,
-    color: '#262626',
-    marginBottom: 12,
+    borderColor: COLORS.border,
+    borderRadius: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    marginBottom: 8,
   },
   botaoPrincipal: {
     width: '100%',
-    backgroundColor: '#0095F6',
-    borderRadius: 6,
-    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingVertical: 10,
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 8,
   },
   textoBotaoPrincipal: {
+    fontFamily: FONTS.bold,
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 14,
   },
   divisorRow: {
@@ -214,20 +200,26 @@ const styles = StyleSheet.create({
   linha: {
     flex: 1,
     height: 1,
-    backgroundColor: '#DBDBDB',
+    backgroundColor: COLORS.border,
   },
   ouTexto: {
-    marginHorizontal: 12,
+    fontFamily: FONTS.bold,
+    marginHorizontal: 14,
     fontSize: 12,
-    color: '#8E8E8E',
-    fontWeight: 'bold',
+    color: COLORS.textMuted,
+    fontWeight: '600',
   },
   botaoAlternar: {
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
-  textoAlternar: {
-    color: '#0095F6',
-    fontWeight: 'bold',
+  textoSecundario: {
+    fontFamily: FONTS.regular,
+    color: COLORS.textPrimary,
     fontSize: 13,
+  },
+  textoLink: {
+    fontFamily: FONTS.bold,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
