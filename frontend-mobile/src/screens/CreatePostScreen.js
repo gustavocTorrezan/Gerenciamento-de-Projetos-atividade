@@ -8,18 +8,20 @@ import {
   ScrollView,
   StyleSheet
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { FONTS, COLORS } from '../styles/theme';
 
 const SUGESTOES_FOTOS = [
   {
-    titulo: 'Setup Dev',
+    titulo: 'Setup',
     url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80'
   },
   {
-    titulo: 'Código Java',
+    titulo: 'Código',
     url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80'
   },
   {
-    titulo: 'Café & Estudo',
+    titulo: 'Café',
     url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80'
   }
 ];
@@ -33,7 +35,7 @@ export default function CreatePostScreen({ onPublicar }) {
   function publicar() {
     setErro('');
     if (!imagemUrl.trim()) {
-      setErro('Cole o link de uma imagem para publicar.');
+      setErro('Informe o link de uma imagem.');
       return;
     }
     if (onPublicar) {
@@ -49,8 +51,7 @@ export default function CreatePostScreen({ onPublicar }) {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.card}>
-        <Text style={styles.titulo}>Nova publicação</Text>
-        <Text style={styles.subtitulo}>Compartilhe uma foto no feed do InstaCC</Text>
+        <Text style={styles.titulo}>Criar nova publicação</Text>
 
         <View style={styles.previewBox}>
           {urlValida && !erroImagem ? (
@@ -62,21 +63,21 @@ export default function CreatePostScreen({ onPublicar }) {
             />
           ) : (
             <View style={styles.previewPlaceholder}>
-              <Text style={styles.placeholderIcon}>🖼️</Text>
+              <Ionicons name="image-outline" size={38} color={COLORS.textMuted} />
               <Text style={styles.placeholderTexto}>
                 {erroImagem
-                  ? 'Não foi possível carregar essa URL. Tente outro link.'
-                  : 'A pré-visualização da foto aparecerá aqui'}
+                  ? 'Não foi possível carregar a imagem'
+                  : 'Pré-visualização da foto'}
               </Text>
             </View>
           )}
         </View>
 
-        <Text style={styles.label}>URL da imagem</Text>
+        <Text style={styles.label}>Link da imagem</Text>
         <TextInput
           style={styles.input}
-          placeholder="https://exemplo.com/minha-foto.jpg"
-          placeholderTextColor="#999"
+          placeholder="https://..."
+          placeholderTextColor={COLORS.textMuted}
           autoCapitalize="none"
           value={imagemUrl}
           onChangeText={(txt) => {
@@ -86,7 +87,6 @@ export default function CreatePostScreen({ onPublicar }) {
         />
 
         <View style={styles.sugestoesRow}>
-          <Text style={styles.sugestoesLabel}>Exemplos rápidos:</Text>
           {SUGESTOES_FOTOS.map((item) => (
             <TouchableOpacity
               key={item.titulo}
@@ -105,7 +105,7 @@ export default function CreatePostScreen({ onPublicar }) {
         <TextInput
           style={[styles.input, styles.inputLegenda]}
           placeholder="Escreva uma legenda..."
-          placeholderTextColor="#999"
+          placeholderTextColor={COLORS.textMuted}
           multiline
           value={legenda}
           onChangeText={setLegenda}
@@ -114,7 +114,7 @@ export default function CreatePostScreen({ onPublicar }) {
         {!!erro && <Text style={styles.erroTexto}>{erro}</Text>}
 
         <TouchableOpacity style={styles.botaoPublicar} onPress={publicar}>
-          <Text style={styles.textoBotao}>Compartilhar no Feed</Text>
+          <Text style={styles.textoBotao}>Compartilhar</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -127,37 +127,32 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F6F7F9',
+    backgroundColor: COLORS.background,
   },
   card: {
     width: '100%',
-    maxWidth: 520,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    maxWidth: 490,
+    backgroundColor: COLORS.surface,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#E6E6E6',
+    borderColor: COLORS.border,
     padding: 20,
   },
   titulo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#262626',
+    fontFamily: FONTS.bold,
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
     textAlign: 'center',
-  },
-  subtitulo: {
-    fontSize: 13,
-    color: '#8E8E8E',
-    textAlign: 'center',
-    marginTop: 4,
     marginBottom: 16,
   },
   previewBox: {
     width: '100%',
-    height: 260,
-    borderRadius: 10,
-    backgroundColor: '#FAFAFA',
+    height: 250,
+    borderRadius: 4,
+    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: '#E6E6E6',
+    borderColor: COLORS.borderLight,
     overflow: 'hidden',
     marginBottom: 16,
     justifyContent: 'center',
@@ -171,78 +166,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  placeholderIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
   placeholderTexto: {
+    fontFamily: FONTS.regular,
     fontSize: 13,
-    color: '#8E8E8E',
+    color: COLORS.textMuted,
+    marginTop: 8,
     textAlign: 'center',
   },
   label: {
-    fontSize: 13,
+    fontFamily: FONTS.bold,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#262626',
+    color: COLORS.textPrimary,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#FAFAFA',
+    fontFamily: FONTS.regular,
+    backgroundColor: COLORS.inputBg,
     borderWidth: 1,
-    borderColor: '#DBDBDB',
-    borderRadius: 8,
+    borderColor: COLORS.border,
+    borderRadius: 6,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#262626',
+    paddingVertical: 9,
+    fontSize: 13,
+    color: COLORS.textPrimary,
     marginBottom: 10,
   },
   inputLegenda: {
-    height: 76,
+    height: 74,
     textAlignVertical: 'top',
   },
   sugestoesRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
     marginBottom: 14,
   },
-  sugestoesLabel: {
-    fontSize: 12,
-    color: '#8E8E8E',
-    marginRight: 8,
-    marginBottom: 4,
-  },
   chipSugestao: {
-    backgroundColor: '#EFEFEF',
-    paddingHorizontal: 10,
+    backgroundColor: COLORS.pillBg,
+    paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 14,
-    marginRight: 6,
-    marginBottom: 4,
+    marginRight: 8,
   },
   chipTexto: {
+    fontFamily: FONTS.medium,
     fontSize: 12,
-    color: '#262626',
-    fontWeight: '500',
-  },
-  erroTexto: {
-    color: '#ED4956',
-    fontSize: 13,
-    marginBottom: 10,
-    textAlign: 'center',
+    color: COLORS.textPrimary,
     fontWeight: '600',
   },
+  erroTexto: {
+    fontFamily: FONTS.medium,
+    color: COLORS.danger,
+    fontSize: 12,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
   botaoPublicar: {
-    backgroundColor: '#0095F6',
-    paddingVertical: 12,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 11,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 4,
   },
   textoBotao: {
+    fontFamily: FONTS.bold,
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 14,
   },
 });

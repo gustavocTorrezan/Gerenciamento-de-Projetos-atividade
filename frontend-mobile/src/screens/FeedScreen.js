@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { View, FlatList, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import { View, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import PostCard from '../components/PostCard';
 import StoriesBar from '../components/StoriesBar';
 import { buscarPostsPaginadosApi } from '../services/api';
+import { COLORS } from '../styles/theme';
 
-export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAtual = 'estudante.cc' }) {
+export default function FeedScreen({
+  posts = [],
+  onCurtir,
+  onComentar,
+  usuarioAtual = 'estudante.cc',
+  onAbrirPerfil,
+  onAbrirDirect
+}) {
   const [postsExtras, setPostsExtras] = useState([]);
   const [pagina, setPagina] = useState(1);
   const [carregandoMais, setCarregandoMais] = useState(false);
@@ -67,12 +75,16 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
       <FlatList
         data={listaCompleta}
         keyExtractor={(item, index) => String(item.keyUnica || item.id || index)}
-        ListHeaderComponent={<StoriesBar usuarioAtual={usuarioAtual} />}
+        ListHeaderComponent={
+          <StoriesBar usuarioAtual={usuarioAtual} onAbrirPerfil={onAbrirPerfil} />
+        }
         renderItem={({ item }) => (
           <PostCard
             post={item}
             onCurtir={handleCurtirLocal}
             onComentar={handleComentarLocal}
+            onAbrirPerfil={onAbrirPerfil}
+            onAbrirDirect={onAbrirDirect}
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -81,14 +93,7 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
         onEndReachedThreshold={0.4}
         ListFooterComponent={
           <View style={styles.footerLoader}>
-            {carregandoMais ? (
-              <>
-                <ActivityIndicator size="small" color="#0095F6" />
-                <Text style={styles.loaderText}>Carregando mais publicações...</Text>
-              </>
-            ) : (
-              <Text style={styles.loaderHint}>Você chegou ao fim das novidades • Role para carregar mais ↓</Text>
-            )}
+            {carregandoMais && <ActivityIndicator size="small" color={COLORS.textMuted} />}
           </View>
         }
       />
@@ -99,28 +104,16 @@ export default function FeedScreen({ posts = [], onCurtir, onComentar, usuarioAt
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F7F9',
+    backgroundColor: COLORS.background,
   },
   listContent: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    maxWidth: 560,
+    paddingBottom: 16,
     width: '100%',
     alignSelf: 'center',
   },
   footerLoader: {
-    paddingVertical: 20,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loaderText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#0095F6',
-    fontWeight: '600',
-  },
-  loaderHint: {
-    fontSize: 12,
-    color: '#999',
   },
 });

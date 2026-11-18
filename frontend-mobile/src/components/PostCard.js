@@ -8,14 +8,17 @@ import {
   TextInput,
   StyleSheet
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { FONTS, COLORS } from '../styles/theme';
 
-export default function PostCard({ post, onCurtir, onComentar }) {
+export default function PostCard({ post, onCurtir, onComentar, onAbrirPerfil, onAbrirDirect }) {
   const [comentarioTexto, setComentarioTexto] = useState('');
   const [curtido, setCurtido] = useState(false);
   const [salvo, setSalvo] = useState(false);
   const [mostrarCoracaoDuplo, setMostrarCoracaoDuplo] = useState(false);
   const [totalCurtidas, setTotalCurtidas] = useState(Number(post?.curtidas || 0));
   const ultimoToqueRef = useRef(0);
+  const inputComentarioRef = useRef(null);
 
   useEffect(() => {
     setTotalCurtidas(Number(post?.curtidas || 0));
@@ -24,7 +27,7 @@ export default function PostCard({ post, onCurtir, onComentar }) {
   const nomeAutor = post?.nomeUsuario || 'estudante.cc';
   const avatarAutor =
     post?.avatarUrl ||
-    `https://ui-avatars.com/api/?background=0095F6&color=fff&name=${encodeURIComponent(nomeAutor)}`;
+    `https://ui-avatars.com/api/?background=EFEFEF&color=262626&name=${encodeURIComponent(nomeAutor)}`;
   const listaComentarios = Array.isArray(post?.comentarios) ? post.comentarios : [];
 
   function clicarCurtir() {
@@ -57,16 +60,20 @@ export default function PostCard({ post, onCurtir, onComentar }) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.headerAutor}>
+        <TouchableOpacity
+          style={styles.headerAutor}
+          activeOpacity={0.75}
+          onPress={() => onAbrirPerfil && onAbrirPerfil(nomeAutor)}
+        >
           <View style={styles.avatarRing}>
             <Image source={{ uri: avatarAutor }} style={styles.avatar} />
           </View>
           <View>
-            <Text style={styles.username}>@{nomeAutor}</Text>
-            <Text style={styles.locationText}>UniFil • Londrina, PR</Text>
+            <Text style={styles.username}>{nomeAutor}</Text>
+            <Text style={styles.locationText}>Londrina, Paraná</Text>
           </View>
-        </View>
-        <Text style={styles.moreDots}>•••</Text>
+        </TouchableOpacity>
+        <Ionicons name="ellipsis-horizontal" size={18} color={COLORS.textPrimary} />
       </View>
 
       <TouchableWithoutFeedback onPress={lidarComToqueImagem}>
@@ -78,7 +85,7 @@ export default function PostCard({ post, onCurtir, onComentar }) {
           />
           {mostrarCoracaoDuplo && (
             <View style={styles.doubleTapOverlay}>
-              <Text style={styles.doubleTapHeart}>♥</Text>
+              <Ionicons name="heart" size={88} color="#FFFFFF" />
             </View>
           )}
         </View>
@@ -86,30 +93,51 @@ export default function PostCard({ post, onCurtir, onComentar }) {
 
       <View style={styles.footer}>
         <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.likeButton, curtido && styles.likeButtonAtivo]}
-            onPress={clicarCurtir}
-            activeOpacity={0.75}
-          >
-            <Text style={[styles.likeIcon, curtido && styles.likeIconAtivo]}>♥</Text>
-            <Text style={[styles.likeCount, curtido && styles.likeCountAtivo]}>
-              {totalCurtidas} {totalCurtidas === 1 ? 'curtida' : 'curtidas'}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.leftActions}>
+            <TouchableOpacity style={styles.iconBtn} onPress={clicarCurtir} activeOpacity={0.7}>
+              <Ionicons
+                name={curtido ? 'heart' : 'heart-outline'}
+                size={25}
+                color={curtido ? COLORS.danger : COLORS.textPrimary}
+              />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.saveButton, salvo && styles.saveButtonAtivo]}
-            onPress={() => setSalvo(!salvo)}
-          >
-            <Text style={[styles.saveText, salvo && styles.saveTextAtivo]}>
-              {salvo ? '🔖 Salvo' : '📑 Salvar'}
-            </Text>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={() => inputComentarioRef.current && inputComentarioRef.current.focus()}
+            >
+              <Ionicons name="chatbubble-outline" size={23} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={() => onAbrirDirect && onAbrirDirect(nomeAutor)}
+            >
+              <Ionicons name="paper-plane-outline" size={23} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity onPress={() => setSalvo(!salvo)}>
+            <Ionicons
+              name={salvo ? 'bookmark' : 'bookmark-outline'}
+              size={23}
+              color={COLORS.textPrimary}
+            />
           </TouchableOpacity>
         </View>
 
+        <Text style={styles.likeCountText}>
+          {totalCurtidas} {totalCurtidas === 1 ? 'curtida' : 'curtidas'}
+        </Text>
+
         {!!post.legenda && (
           <Text style={styles.caption}>
-            <Text style={styles.captionUser}>@{nomeAutor} </Text>
+            <Text
+              style={styles.captionUser}
+              onPress={() => onAbrirPerfil && onAbrirPerfil(nomeAutor)}
+            >
+              {nomeAutor}{' '}
+            </Text>
             {post.legenda}
           </Text>
         )}
@@ -120,7 +148,12 @@ export default function PostCard({ post, onCurtir, onComentar }) {
               const autorCom = c.autor || c.nomeUsuario || 'usuario';
               return (
                 <Text key={String(c.id || index)} style={styles.commentItem}>
-                  <Text style={styles.commentAuthor}>@{autorCom}: </Text>
+                  <Text
+                    style={styles.commentAuthor}
+                    onPress={() => onAbrirPerfil && onAbrirPerfil(autorCom)}
+                  >
+                    {autorCom}{' '}
+                  </Text>
                   {c.texto}
                 </Text>
               );
@@ -128,21 +161,22 @@ export default function PostCard({ post, onCurtir, onComentar }) {
           </View>
         )}
 
-        <Text style={styles.timestampText}>HÁ POUCOS MINUTOS</Text>
-
         <View style={styles.commentInputRow}>
           <TextInput
+            ref={inputComentarioRef}
             style={styles.commentInput}
             placeholder="Adicione um comentário..."
-            placeholderTextColor="#999"
+            placeholderTextColor={COLORS.textMuted}
             value={comentarioTexto}
             onChangeText={setComentarioTexto}
             onSubmitEditing={enviarComentario}
             returnKeyType="send"
           />
-          <TouchableOpacity onPress={enviarComentario} style={styles.sendButton}>
-            <Text style={styles.sendButtonText}>Publicar</Text>
-          </TouchableOpacity>
+          {comentarioTexto.trim().length > 0 && (
+            <TouchableOpacity onPress={enviarComentario} style={styles.sendButton}>
+              <Text style={styles.sendButtonText}>Publicar</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
@@ -151,59 +185,55 @@ export default function PostCard({ post, onCurtir, onComentar }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#E6E6E6',
-    marginBottom: 18,
+    borderColor: COLORS.border,
+    borderRadius: 4,
+    marginBottom: 14,
     overflow: 'hidden',
     width: '100%',
-    maxWidth: 540,
+    maxWidth: 490,
     alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   headerAutor: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatarRing: {
-    padding: 2,
-    borderRadius: 21,
+    padding: 1.5,
+    borderRadius: 19,
     borderWidth: 1.5,
-    borderColor: '#E1306C',
+    borderColor: '#DD2A7B',
     marginRight: 10,
   },
   avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#EFEFEF',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.borderLight,
   },
   username: {
-    fontWeight: 'bold',
-    fontSize: 14,
-    color: '#262626',
+    fontFamily: FONTS.bold,
+    fontWeight: '700',
+    fontSize: 13,
+    color: COLORS.textPrimary,
   },
   locationText: {
+    fontFamily: FONTS.regular,
     fontSize: 11,
-    color: '#8E8E8E',
-    marginTop: 1,
-  },
-  moreDots: {
-    fontSize: 12,
-    color: '#8E8E8E',
-    letterSpacing: 1,
+    color: COLORS.textSecondary,
   },
   imageContainer: {
     width: '100%',
-    height: 420,
-    backgroundColor: '#F5F5F5',
+    height: 410,
+    backgroundColor: COLORS.borderLight,
     overflow: 'hidden',
     position: 'relative',
     justifyContent: 'center',
@@ -217,129 +247,84 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    backgroundColor: 'rgba(0,0,0,0.12)',
     width: '100%',
     height: '100%',
   },
-  doubleTapHeart: {
-    fontSize: 88,
-    color: '#FFFFFF',
-  },
   footer: {
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  likeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF0F3',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#FFD6DF',
-  },
-  likeButtonAtivo: {
-    backgroundColor: '#ED4956',
-    borderColor: '#ED4956',
-  },
-  likeIcon: {
-    color: '#ED4956',
-    fontSize: 16,
-    marginRight: 6,
-  },
-  likeIconAtivo: {
-    color: '#FFFFFF',
-  },
-  likeCount: {
-    fontWeight: 'bold',
-    fontSize: 13,
-    color: '#262626',
-  },
-  likeCountAtivo: {
-    color: '#FFFFFF',
-  },
-  saveButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  saveButtonAtivo: {
-    backgroundColor: '#262626',
-    borderColor: '#262626',
-  },
-  saveText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#262626',
-  },
-  saveTextAtivo: {
-    color: '#FFFFFF',
-  },
-  caption: {
-    fontSize: 14,
-    color: '#262626',
-    lineHeight: 20,
     marginBottom: 8,
   },
+  leftActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconBtn: {
+    marginRight: 14,
+  },
+  likeCountText: {
+    fontFamily: FONTS.bold,
+    fontWeight: '700',
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    marginBottom: 5,
+  },
+  caption: {
+    fontFamily: FONTS.regular,
+    fontSize: 13,
+    color: COLORS.textPrimary,
+    lineHeight: 18,
+    marginBottom: 6,
+  },
   captionUser: {
-    fontWeight: 'bold',
+    fontFamily: FONTS.bold,
+    fontWeight: '700',
   },
   commentsSection: {
-    backgroundColor: '#FAFAFA',
-    padding: 10,
-    borderRadius: 8,
+    marginTop: 2,
     marginBottom: 8,
   },
   commentItem: {
+    fontFamily: FONTS.regular,
     fontSize: 13,
-    color: '#333',
-    marginBottom: 4,
+    color: COLORS.textPrimary,
+    marginBottom: 3,
+    lineHeight: 18,
   },
   commentAuthor: {
-    fontWeight: 'bold',
-    color: '#262626',
-  },
-  timestampText: {
-    fontSize: 10,
-    color: '#8E8E8E',
-    marginBottom: 10,
-    letterSpacing: 0.4,
+    fontFamily: FONTS.bold,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
   },
   commentInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: 10,
+    borderTopColor: COLORS.borderLight,
+    paddingTop: 9,
+    marginTop: 4,
   },
   commentInput: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    fontFamily: FONTS.regular,
     fontSize: 13,
-    color: '#262626',
+    color: COLORS.textPrimary,
+    paddingVertical: 4,
   },
   sendButton: {
     marginLeft: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
   },
   sendButtonText: {
-    color: '#0095F6',
-    fontWeight: 'bold',
+    fontFamily: FONTS.bold,
+    color: COLORS.primary,
+    fontWeight: '700',
     fontSize: 13,
   },
 });
